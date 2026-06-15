@@ -27,8 +27,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.ui.components.AcademicImagePlaceholder
+import com.example.ui.components.AdmissionBottomBar
 import com.example.ui.navigation.HomeRoute
 import com.example.ui.navigation.MegaQuizLiveRoute
+import com.example.ui.navigation.MegaQuizRoutineRoute
 import java.io.File
 import kotlin.math.roundToInt
 
@@ -75,7 +78,7 @@ fun MegaQuizResultScreen(score: Double, total: Int, right: Int, wrong: Int, navC
             }
         },
         bottomBar = {
-            BottomNavigationBar(navController, "Exams")
+            AdmissionBottomBar(navController, "MegaQuiz")
         }
     ) { padding ->
         Column(
@@ -234,14 +237,14 @@ fun MegaQuizResultScreen(score: Double, total: Int, right: Int, wrong: Int, navC
             // Action CTAs
             Column(modifier = Modifier.fillMaxWidth().padding(bottom = 48.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Button(
-                    onClick = { /* TODO View Answers */ },
+                    onClick = { navController.navigate(MegaQuizRoutineRoute) },
                     modifier = Modifier.fillMaxWidth().height(60.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFffb95f)),
                     shape = RoundedCornerShape(999.dp)
                 ) {
-                    Icon(Icons.Filled.Visibility, contentDescription = null, tint = Color(0xFF653e00))
+                    Icon(Icons.Filled.CalendarMonth, contentDescription = null, tint = Color(0xFF653e00))
                     Spacer(Modifier.width(8.dp))
-                    Text("View Answers", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF653e00))
+                    Text("Back to Routine", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF653e00))
                 }
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -257,7 +260,7 @@ fun MegaQuizResultScreen(score: Double, total: Int, right: Int, wrong: Int, navC
                     }
                     
                     Button(
-                        onClick = { /* Default action, practice more */ },
+                        onClick = { navController.navigate(MegaQuizRoutineRoute) },
                         modifier = Modifier.weight(1f).height(60.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFeaddff)),
                         shape = RoundedCornerShape(999.dp)
@@ -281,7 +284,7 @@ fun MegaQuizResultScreen(score: Double, total: Int, right: Int, wrong: Int, navC
                     Text("Personalized Study Plan", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1b1a28))
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "Based on your performance, we recommend focusing on 'Advanced Calculus' and 'Applied Physics'.",
+                        "Based on your performance, focus next on Liberation War facts and International Organizations.",
                         fontSize = 16.sp, color = Color(0xFF464555)
                     )
                     Spacer(Modifier.height(16.dp))
@@ -292,12 +295,10 @@ fun MegaQuizResultScreen(score: Double, total: Int, right: Int, wrong: Int, navC
                     }
                     Spacer(Modifier.height(24.dp))
                     
-                    // The generated image
-                    AsyncImage(
-                        model = "file:///C:/Users/User/.gemini/antigravity-ide/brain/020f2663-f2ea-48de-a844-6540365a77c2/study_plan_banner_1780514386867.png",
-                        contentDescription = "Study Plan Banner",
-                        modifier = Modifier.fillMaxWidth().height(160.dp).clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Crop
+                    AcademicImagePlaceholder(
+                        title = "Personalized GK Plan",
+                        subtitle = "Review weak areas before the next timed exam",
+                        modifier = Modifier.fillMaxWidth().height(160.dp)
                     )
                 }
             }

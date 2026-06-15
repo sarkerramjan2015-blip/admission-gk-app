@@ -1,7 +1,5 @@
 package com.example.ui.screens
 
-import androidx.compose.material.icons.automirrored.filled.*
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -14,20 +12,17 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import com.example.ui.theme.*
+import com.example.ui.util.parseHtml
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,58 +30,66 @@ import androidx.navigation.NavController
 import com.example.data.GKSubTopicEntity
 import com.example.data.MCQQuestionEntity
 import com.example.ui.GKViewModel
+import com.example.ui.components.AdmissionTopBar
+import com.example.ui.components.EmptyState
+import com.example.ui.components.LoadingState
+import com.example.ui.components.MetricCard
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 
-// We reuse some colors from SubTopicDetailScreen but add a few for practice
-val SnPracticeEmerald = Color(0xFF10b981)
-val SnPracticeRed = Color(0xFFef4444)
-val SnPracticeEmeraldLight = Color(0xFFd1fae5)
-val SnPracticeRedLight = Color(0xFFfee2e2)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MCQPracticeScreen(subTopicId: String, viewModel: GKViewModel, navController: NavController) {
-    val subTopic by remember(subTopicId) { viewModel.getSubTopicById(subTopicId) }.collectAsStateWithLifecycle(initialValue = null)
-    val rawQuestions by remember(subTopicId) { viewModel.getMCQsForSubTopic(subTopicId) }.collectAsStateWithLifecycle(initialValue = emptyList())
-    
-    // Parse JSON options outside of the main list recomposition
+fun MCQPracticeScreen(
+    subTopicId: String,
+    viewModel: GKViewModel,
+    navController: NavController,
+) {
+    val subTopic by remember(subTopicId) { viewModel.getSubTopicById(subTopicId) }
+        .collectAsStateWithLifecycle(initialValue = null)
+    val rawQuestions by remember(subTopicId) { viewModel.getMCQsForSubTopic(subTopicId) }
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+
     val moshi = remember { Moshi.Builder().build() }
-    val listType = remember { Types.newParameterizedType(List::class.java, String::class.java) }
+    val listType = remember {
+        Types.newParameterizedType(List::class.java, String::class.java)
+    }
     val jsonAdapter = remember { moshi.adapter<List<String>>(listType) }
-    
+
     val parsedQuestions = remember(rawQuestions) {
         rawQuestions.map { q ->
-            val options = try { jsonAdapter.fromJson(q.options) ?: emptyList() } catch(e: Exception) { emptyList() }
+            val options = try {
+                jsonAdapter.fromJson(q.options) ?: emptyList()
+            } catch (_: Exception) {
+                emptyList()
+            }
             ParsedQuestion(q, options)
         }
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("GK Master", fontWeight = FontWeight.Bold, color = SnPrimaryColor) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = SnPrimaryColor)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Filled.Search, contentDescription = "Search", tint = SnOnSurfaceVariantColor)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SnBackgroundColor.copy(alpha = 0.9f))
+            AdmissionTopBar(
+                title = "Admission GK",
+                subtitle = "MCQ Practice",
+                showBack = true,
+                onBack = { navController.popBackStack() }
             )
         },
-        containerColor = SnBackgroundColor
+        containerColor = AppBackground
     ) { padding ->
         if (subTopic == null || parsedQuestions.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier.fillMaxSize().padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
                 if (subTopic == null) {
-                    CircularProgressIndicator(color = SnPrimaryColor)
+                    LoadingState(message = "Loading practice questions...")
                 } else {
-                    Text("No questions available for practice.", color = SnOnSurfaceVariantColor)
+                    EmptyState(
+                        title = "No practice questions yet",
+                        message = "This topic is ready for notes. MCQ practice will appear here once questions are added.",
+                        icon = Icons.Filled.CheckCircle
+                    )
                 }
             }
         } else {
@@ -97,17 +100,15 @@ fun MCQPracticeScreen(subTopicId: String, viewModel: GKViewModel, navController:
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Header
                 item {
-                    PracticeHeader(subTopic = subTopic!!, totalQuestions = parsedQuestions.size)
+                    PracticeHeader(
+                        subTopic = subTopic!!,
+                        totalQuestions = parsedQuestions.size
+                    )
                 }
-                
-                // Stats (Hardcoded as per plan)
                 item {
-                    PracticeStatsSection()
+                    PracticeStatsSection(totalQuestions = parsedQuestions.size)
                 }
-
-                // Questions
                 itemsIndexed(parsedQuestions) { index, item ->
                     PracticeQuestionCard(index = index + 1, parsedQuestion = item)
                 }
@@ -118,15 +119,15 @@ fun MCQPracticeScreen(subTopicId: String, viewModel: GKViewModel, navController:
 
 data class ParsedQuestion(
     val entity: MCQQuestionEntity,
-    val optionsList: List<String>
+    val optionsList: List<String>,
 )
 
 @Composable
-fun PracticeHeader(subTopic: GKSubTopicEntity, totalQuestions: Int) {
+private fun PracticeHeader(subTopic: GKSubTopicEntity, totalQuestions: Int) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SnSurfaceContainerLowest),
+        colors = CardDefaults.cardColors(containerColor = AppSurface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -134,100 +135,73 @@ fun PracticeHeader(subTopic: GKSubTopicEntity, totalQuestions: Int) {
                 text = subTopic.title,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = SnPrimaryColor
+                color = BrandPrimary
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Topic Progress: 10 / $totalQuestions",
                 style = MaterialTheme.typography.bodyMedium,
-                color = SnOnSurfaceVariantColor
+                color = TextSecondary
             )
             Spacer(modifier = Modifier.height(8.dp))
             LinearProgressIndicator(
                 progress = { 10f / totalQuestions.coerceAtLeast(1).toFloat() },
                 modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
-                color = SnPrimaryColor,
-                trackColor = SnOutlineVariantColor.copy(alpha = 0.3f)
+                color = BrandPrimary,
+                trackColor = AppOutline.copy(alpha = 0.3f)
             )
         }
     }
 }
 
 @Composable
-fun PracticeStatsSection() {
+private fun PracticeStatsSection(totalQuestions: Int) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Streak Card
-        Card(
-            modifier = Modifier.weight(1f).height(100.dp),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(SnPrimaryColor, SnSecondaryColor)
-                        )
-                    )
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Current Streak", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
-                    Text("08", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 28.sp)
-                    Text("Days", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
-                }
-            }
-        }
-        
-        // Accuracy Card
-        Card(
-            modifier = Modifier.weight(1f).height(100.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = SnSurfaceContainerLowest),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text("Accuracy", color = SnOnSurfaceVariantColor, fontSize = 12.sp)
-                Text("84%", color = SnPrimaryColor, fontWeight = FontWeight.Bold, fontSize = 28.sp)
-                Text("Excellent!", color = SnPracticeEmerald, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            }
-        }
+        MetricCard(
+            modifier = Modifier.weight(1f),
+            label = "Questions",
+            value = totalQuestions.toString(),
+            supportingText = "Instant feedback",
+            icon = Icons.Filled.CheckCircle,
+            accentColor = BrandPrimary
+        )
+        MetricCard(
+            modifier = Modifier.weight(1f),
+            label = "Mode",
+            value = "Practice",
+            supportingText = "No timer",
+            icon = Icons.Filled.Lightbulb,
+            accentColor = SuccessColor
+        )
     }
 }
 
 @Composable
-fun PracticeQuestionCard(index: Int, parsedQuestion: ParsedQuestion) {
+private fun PracticeQuestionCard(index: Int, parsedQuestion: ParsedQuestion) {
     var selectedOption by remember { mutableStateOf<String?>(null) }
     val isAnswered = selectedOption != null
-    
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SnSurfaceContainerLowest),
+        colors = CardDefaults.cardColors(containerColor = AppSurface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, SnOutlineVariantColor.copy(alpha = 0.3f))
+        border = BorderStroke(1.dp, AppOutline)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Question Text
             Row(verticalAlignment = Alignment.Top) {
                 Surface(
                     shape = CircleShape,
-                    color = SnPrimaryContainerColor.copy(alpha = 0.1f),
+                    color = BrandPrimary.copy(alpha = 0.1f),
                     modifier = Modifier.size(28.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
                             text = index.toString(),
-                            color = SnPrimaryColor,
+                            color = BrandPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
@@ -236,20 +210,20 @@ fun PracticeQuestionCard(index: Int, parsedQuestion: ParsedQuestion) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = parsedQuestion.entity.questionText,
+                        text = parsedQuestion.entity.questionText.parseHtml(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = SnOnSurfaceColor,
+                        color = TextPrimary,
                         lineHeight = 24.sp
                     )
-                    
+
                     if (parsedQuestion.entity.sourceExam.isNotBlank() || parsedQuestion.entity.referenceText.isNotBlank()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             if (parsedQuestion.entity.referenceText.isNotBlank()) {
                                 Text(
                                     text = parsedQuestion.entity.referenceText,
-                                    color = Color(0xFFF59E0B), // Golden Star Color
+                                    color = BrandAccent,
                                     fontSize = 12.sp,
                                     letterSpacing = 1.sp
                                 )
@@ -257,15 +231,18 @@ fun PracticeQuestionCard(index: Int, parsedQuestion: ParsedQuestion) {
                             }
                             if (parsedQuestion.entity.sourceExam.isNotBlank()) {
                                 Surface(
-                                    color = SnPrimaryContainerColor.copy(alpha = 0.1f),
+                                    color = BrandPrimary.copy(alpha = 0.1f),
                                     shape = RoundedCornerShape(4.dp)
                                 ) {
                                     Text(
                                         text = "${parsedQuestion.entity.sourceExam} ${parsedQuestion.entity.year}".trim(),
-                                        color = SnPrimaryColor,
+                                        color = BrandPrimary,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        modifier = Modifier.padding(
+                                            horizontal = 6.dp,
+                                            vertical = 2.dp
+                                        )
                                     )
                                 }
                             }
@@ -273,10 +250,9 @@ fun PracticeQuestionCard(index: Int, parsedQuestion: ParsedQuestion) {
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
-            // Options
+
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val prefixes = listOf("A", "B", "C", "D", "E")
                 parsedQuestion.optionsList.forEachIndexed { optIndex, optionText ->
@@ -284,23 +260,23 @@ fun PracticeQuestionCard(index: Int, parsedQuestion: ParsedQuestion) {
                     val isSelected = optionText == selectedOption
                     val showAsCorrect = isAnswered && isCorrect
                     val showAsWrong = isAnswered && isSelected && !isCorrect
-                    
+
                     val containerColor = when {
-                        showAsCorrect -> SnPracticeEmeraldLight
-                        showAsWrong -> SnPracticeRedLight
-                        else -> SnBackgroundColor
+                        showAsCorrect -> SuccessColor.copy(alpha = 0.1f)
+                        showAsWrong -> ErrorColor.copy(alpha = 0.1f)
+                        else -> AppBackground
                     }
                     val borderColor = when {
-                        showAsCorrect -> SnPracticeEmerald
-                        showAsWrong -> SnPracticeRed
-                        else -> SnOutlineVariantColor.copy(alpha = 0.5f)
+                        showAsCorrect -> SuccessColor
+                        showAsWrong -> ErrorColor
+                        else -> AppOutline.copy(alpha = 0.5f)
                     }
                     val textColor = when {
-                        showAsCorrect -> SnPracticeEmerald
-                        showAsWrong -> SnPracticeRed
-                        else -> SnOnSurfaceColor
+                        showAsCorrect -> SuccessColor
+                        showAsWrong -> ErrorColor
+                        else -> TextPrimary
                     }
-                    
+
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -315,10 +291,11 @@ fun PracticeQuestionCard(index: Int, parsedQuestion: ParsedQuestion) {
                             modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Prefix Circle
-                            val prefixColor = if (showAsCorrect || showAsWrong) textColor else SnOnSurfaceVariantColor
-                            val prefixBg = if (showAsCorrect || showAsWrong) textColor.copy(alpha = 0.1f) else SnOutlineVariantColor.copy(alpha = 0.2f)
-                            
+                            val prefixColor = if (showAsCorrect || showAsWrong) textColor
+                            else TextSecondary
+                            val prefixBg = if (showAsCorrect || showAsWrong) textColor.copy(alpha = 0.1f)
+                            else AppOutline.copy(alpha = 0.2f)
+
                             Box(
                                 modifier = Modifier
                                     .size(24.dp)
@@ -332,24 +309,27 @@ fun PracticeQuestionCard(index: Int, parsedQuestion: ParsedQuestion) {
                                     fontSize = 12.sp
                                 )
                             }
-                            
+
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = optionText,
+                                text = optionText.parseHtml(),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = textColor,
                                 modifier = Modifier.weight(1f)
                             )
-                            
+
                             if (showAsCorrect) {
-                                Icon(Icons.Filled.CheckCircle, contentDescription = "Correct", tint = SnPracticeEmerald)
+                                Icon(
+                                    Icons.Filled.CheckCircle,
+                                    contentDescription = "Correct",
+                                    tint = SuccessColor
+                                )
                             }
                         }
                     }
                 }
             }
-            
-            // Explanation Section
+
             AnimatedVisibility(
                 visible = isAnswered,
                 enter = expandVertically(),
@@ -360,17 +340,29 @@ fun PracticeQuestionCard(index: Int, parsedQuestion: ParsedQuestion) {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        color = SnHighlightYellow.copy(alpha = 0.5f)
+                        color = BrandAccent.copy(alpha = 0.1f)
                     ) {
-                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-                            Icon(Icons.Filled.Lightbulb, contentDescription = "Explanation", tint = SnTertiaryColor)
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Icon(
+                                Icons.Filled.Lightbulb,
+                                contentDescription = "Explanation",
+                                tint = BrandAccent
+                            )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("Explanation", fontWeight = FontWeight.Bold, color = SnTertiaryColor)
+                                Text(
+                                    "Explanation",
+                                    fontWeight = FontWeight.Bold,
+                                    color = BrandAccent
+                                )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = parsedQuestion.entity.explanation.ifBlank { "No explanation available." },
-                                    color = SnOnSurfaceColor,
+                                    text = parsedQuestion.entity.explanation
+                                        .ifBlank { "No explanation available." }.parseHtml(),
+                                    color = TextPrimary,
                                     style = MaterialTheme.typography.bodyMedium,
                                     lineHeight = 22.sp
                                 )

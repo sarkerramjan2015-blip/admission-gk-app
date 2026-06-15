@@ -5,6 +5,7 @@ plugins {
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.roborazzi)
   alias(libs.plugins.secrets)
+  id("com.google.gms.google-services")
 }
 
 android {
@@ -94,6 +95,14 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
+  implementation(libs.firebase.firestore)
+  implementation(libs.firebase.auth)
+  implementation(libs.firebase.common)
+  implementation(libs.play.services.auth)
+  implementation(libs.androidx.biometric)
+  implementation(libs.markwon.core)
+  implementation(libs.markwon.ext.tables)
+  implementation(libs.markwon.html)
   // implementation(libs.firebase.ai)
   implementation(libs.kotlinx.serialization.json)
   implementation(libs.kotlinx.coroutines.android)

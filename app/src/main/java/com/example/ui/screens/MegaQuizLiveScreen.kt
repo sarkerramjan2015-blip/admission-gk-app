@@ -25,7 +25,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.data.MegaQuizResultEntity
 import com.example.ui.GKViewModel
+import com.example.ui.util.parseHtml
 import com.example.ui.navigation.MegaQuizLiveRoute
 import com.example.ui.navigation.MegaQuizSubmittedRoute
 import com.squareup.moshi.Moshi
@@ -36,10 +38,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun MegaQuizLiveScreen(examId: String, viewModel: GKViewModel, navController: NavController) {
     val rawQuestions by remember(examId) { viewModel.getMegaQuizQuestions(examId) }.collectAsStateWithLifecycle(initialValue = emptyList())
-    // Mocking 30 questions by repeating the dummy list
-    val questions = if (rawQuestions.isNotEmpty()) {
-        (0..5).flatMap { rawQuestions }.take(30)
-    } else emptyList()
+    val questions = rawQuestions.take(30)
 
     if (questions.isEmpty()) {
         Scaffold { padding ->
@@ -51,7 +50,7 @@ fun MegaQuizLiveScreen(examId: String, viewModel: GKViewModel, navController: Na
     }
 
     var selectedAnswers by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
-    var timeLeft by remember { mutableIntStateOf(1182) } // 19m 42s as per mockup
+    var timeLeft by remember { mutableIntStateOf(20 * 60) }
     var showSubmitDialog by remember { mutableStateOf(false) }
     
     val submitAction = {
@@ -64,7 +63,9 @@ fun MegaQuizLiveScreen(examId: String, viewModel: GKViewModel, navController: Na
             }
         }
         val score = right - (wrong * 0.25)
-        navController.navigate(MegaQuizSubmittedRoute(questions.size, selectedAnswers.size, questions.size - selectedAnswers.size)) { popUpTo<MegaQuizLiveRoute> { inclusive = true } }
+        val unanswered = questions.size - selectedAnswers.size
+        viewModel.saveMegaQuizResult(examId, score, right, wrong, unanswered)
+        navController.navigate(MegaQuizSubmittedRoute(questions.size, selectedAnswers.size, unanswered)) { popUpTo<MegaQuizLiveRoute> { inclusive = true } }
     }
 
     LaunchedEffect(Unit) {
@@ -117,9 +118,7 @@ fun MegaQuizLiveScreen(examId: String, viewModel: GKViewModel, navController: Na
                 }
             }
         },
-        bottomBar = {
-            BottomNavigationBar(navController = navController, currentRoute = "Exams")
-        },
+        bottomBar = {},
         containerColor = Color(0xFFfcf8ff)
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
@@ -188,7 +187,7 @@ fun MegaQuizLiveScreen(examId: String, viewModel: GKViewModel, navController: Na
                                 }
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(mq.questionText, style = MaterialTheme.typography.titleLarge, color = Color(0xFF1b1a28), lineHeight = 28.sp)
+                            Text(mq.questionText.parseHtml(), style = MaterialTheme.typography.titleLarge, color = Color(0xFF1b1a28), lineHeight = 28.sp)
                             Spacer(modifier = Modifier.height(24.dp))
 
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -214,7 +213,7 @@ fun MegaQuizLiveScreen(examId: String, viewModel: GKViewModel, navController: Na
                                                             }
                                                         }
                                                         Spacer(modifier = Modifier.width(16.dp))
-                                                        Text(option, fontSize = 18.sp, color = Color(0xFF3323cc), fontWeight = FontWeight.SemiBold)
+                                                        Text(option.parseHtml(), fontSize = 18.sp, color = Color(0xFF3323cc), fontWeight = FontWeight.SemiBold)
                                                     }
                                                     Surface(color = Color(0xFF1e00a9).copy(alpha=0.1f), shape = RoundedCornerShape(8.dp)) {
                                                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
@@ -240,7 +239,7 @@ fun MegaQuizLiveScreen(examId: String, viewModel: GKViewModel, navController: Na
                                                         }
                                                     }
                                                     Spacer(modifier = Modifier.width(16.dp))
-                                                    Text(option, fontSize = 18.sp, color = Color(0xFF464555))
+                                                    Text(option.parseHtml(), fontSize = 18.sp, color = Color(0xFF464555))
                                                 }
                                             }
                                         }
@@ -261,7 +260,7 @@ fun MegaQuizLiveScreen(examId: String, viewModel: GKViewModel, navController: Na
                                                     }
                                                 }
                                                 Spacer(modifier = Modifier.width(16.dp))
-                                                Text(option, fontSize = 18.sp, color = Color(0xFF1b1a28))
+                                                Text(option.parseHtml(), fontSize = 18.sp, color = Color(0xFF1b1a28))
                                             }
                                         }
                                     }

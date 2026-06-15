@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import com.example.ui.navigation.HomeRoute
 import com.example.ui.navigation.MegaQuizRoutineRoute
 import com.example.ui.navigation.MegaQuizLiveRoute
+import com.example.ui.components.AdmissionBottomBar
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +68,7 @@ fun MegaQuizSubmittedScreen(total: Int, answered: Int, unanswered: Int, navContr
                         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
                     ) {
                         Text(
-                            "00:45:00", 
+                            "Result Pending", 
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             color = Color.White, 
                             fontWeight = FontWeight.Bold, 
@@ -78,7 +79,7 @@ fun MegaQuizSubmittedScreen(total: Int, answered: Int, unanswered: Int, navContr
             }
         },
         bottomBar = {
-            BottomNavigationBar(navController, "Exams")
+            AdmissionBottomBar(navController, "MegaQuiz")
         }
     ) { padding ->
         Column(
@@ -245,7 +246,7 @@ fun MegaQuizSubmittedScreen(total: Int, answered: Int, unanswered: Int, navContr
             Spacer(modifier = Modifier.weight(1f))
             
             // Decorative Marquee Section
-            val marqueeText = "OXFORD UNIVERSITY   CAMBRIDGE ACADEMY   MIT INSTITUTE   HARVARD GLOBAL   STANFORD PREP   "
+            val marqueeText = "DHAKA UNIVERSITY   RAJSHAHI UNIVERSITY   JAHANGIRNAGAR UNIVERSITY   CHITTAGONG UNIVERSITY   GST ADMISSION   "
             Text(
                 text = marqueeText.repeat(5),
                 modifier = Modifier

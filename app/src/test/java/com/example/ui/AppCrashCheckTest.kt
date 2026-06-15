@@ -9,7 +9,7 @@ import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
-@Config(manifest=Config.NONE)
+@Config(manifest = Config.NONE, sdk = [35])
 class AppCrashCheckTest {
 
     @get:Rule

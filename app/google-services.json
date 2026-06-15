@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "0",
+    "project_id": "admission-gk-app",
+    "storage_bucket": "admission-gk-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:0:android:0000000000000000000000",
+        "android_client_info": {
+          "package_name": "com.aistudio.admissiongk.brmqz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfakeApiKeyForDevelopmentOnly_replaceWithRealKey"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

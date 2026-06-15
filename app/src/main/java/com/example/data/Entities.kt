@@ -44,6 +44,7 @@ data class RecentGKEntity(
     val category: String, // BD, INT
     val topicTitle: String,
     val specialTopicNote: String,
+    val confusionCorner: String = "",
     val sourceText: String,
     val contributorName: String,
     val status: String,

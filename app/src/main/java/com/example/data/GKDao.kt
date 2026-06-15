@@ -85,4 +85,69 @@ interface GKDao {
     
     @Query("SELECT score FROM mega_quiz_results ORDER BY dateTaken DESC LIMIT 1")
     fun getLatestMegaQuizScore(): Flow<Double?>
+    
+    @Query("SELECT COUNT(*) FROM gk_main_topics")
+    fun getTotalTopicsCount(): Flow<Int>
+    
+    @Query("SELECT COUNT(*) FROM gk_sub_topics")
+    fun getTotalSubTopicsCount(): Flow<Int>
+    
+    @Query("SELECT COUNT(*) FROM mcq_questions WHERE status = 'APPROVED'")
+    fun getTotalPracticeMCQCount(): Flow<Int>
+    
+    @Query("SELECT COUNT(*) FROM mega_quiz_exams")
+    fun getTotalMegaQuizCount(): Flow<Int>
+    
+    @Query("SELECT * FROM mcq_practice_progress WHERE dateStr LIKE :monthPrefix ORDER BY dateStr ASC")
+    fun getMonthlyProgress(monthPrefix: String): Flow<List<MCQPracticeProgressEntity>>
+    
+    @Query("SELECT * FROM mcq_practice_progress WHERE dateStr LIKE :yearPrefix ORDER BY dateStr ASC")
+    fun getYearlyProgress(yearPrefix: String): Flow<List<MCQPracticeProgressEntity>>
+    
+    @Query("SELECT * FROM mcq_practice_progress ORDER BY dateStr ASC")
+    fun getAllProgress(): Flow<List<MCQPracticeProgressEntity>>
+
+    // ── Recent GK Admin ────────────────────────────────
+    @Query("SELECT * FROM recent_gk WHERE status = :status ORDER BY createdAt DESC")
+    fun getRecentGKByStatus(status: String): Flow<List<RecentGKEntity>>
+
+    @Query("SELECT * FROM recent_gk ORDER BY createdAt DESC")
+    fun getAllRecentGK(): Flow<List<RecentGKEntity>>
+
+    @Query("UPDATE recent_gk SET status = :status, approvedAt = :timestamp WHERE id = :id")
+    suspend fun updateRecentGKStatus(id: String, status: String, timestamp: Long)
+
+    // ── Dashboard Analytics ────────────────────────────
+    @Query("SELECT COALESCE(SUM(totalPracticed), 0) FROM mcq_practice_progress")
+    fun getTotalPracticedMCQs(): Flow<Int>
+
+    @Query("SELECT COALESCE(SUM(correctCount), 0) FROM mcq_practice_progress")
+    fun getTotalCorrectMCQs(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM mcq_quiz_results")
+    fun getTotalQuizAttempts(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM mega_quiz_results")
+    fun getTotalMegaQuizAttempts(): Flow<Int>
+
+    @Query("SELECT * FROM mcq_practice_progress WHERE dateStr LIKE :monthPrefix ORDER BY dateStr ASC")
+    fun getCurrentMonthProgress(monthPrefix: String): Flow<List<MCQPracticeProgressEntity>>
+
+    @Query("SELECT * FROM mcq_quiz_results ORDER BY dateTaken DESC LIMIT 5")
+    fun getRecentQuizResults(): Flow<List<MCQQuizResultEntity>>
+
+    @Query("SELECT * FROM mega_quiz_results ORDER BY dateTaken DESC LIMIT 5")
+    fun getRecentMegaQuizResults(): Flow<List<MegaQuizResultEntity>>
+
+    @Query("SELECT COUNT(DISTINCT dateStr) FROM mcq_practice_progress WHERE totalPracticed > 0")
+    fun getTotalActiveDays(): Flow<Int>
+
+    @Query("SELECT COUNT(DISTINCT dateStr) FROM mcq_practice_progress WHERE totalPracticed > 0 AND dateStr LIKE :monthPrefix")
+    fun getCurrentMonthActiveDays(monthPrefix: String): Flow<Int>
+
+    @Query("SELECT COALESCE(SUM(totalPracticed), 0) FROM mcq_practice_progress")
+    fun getTotalPracticedMCQsOnce(): Int
+
+    @Query("SELECT * FROM mcq_practice_progress WHERE dateStr >= :weekStart ORDER BY dateStr ASC")
+    fun getWeekProgress(weekStart: String): Flow<List<MCQPracticeProgressEntity>>
 }
