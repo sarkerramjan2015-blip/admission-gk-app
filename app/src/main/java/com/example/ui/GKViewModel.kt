@@ -208,6 +208,9 @@ class GKViewModel(private val repository: GKRepository, private val uid: String)
     fun getSubTopicById(subTopicId: String): Flow<GKSubTopicEntity?> =
         repository.getSubTopicById(subTopicId)
 
+    fun getAllSubTopics(): Flow<List<GKSubTopicEntity>> =
+        repository.getAllSubTopics()
+
     fun getMCQsForSubTopic(subTopicId: String): Flow<List<MCQQuestionEntity>> =
         repository.getMCQsForSubTopic(subTopicId)
 
@@ -220,6 +223,9 @@ class GKViewModel(private val repository: GKRepository, private val uid: String)
 
     fun getMegaQuizQuestions(examId: String): Flow<List<MegaQuizQuestionEntity>> =
         repository.getMegaQuizQuestions(examId)
+
+    fun getMegaQuizSubTopics(examId: String): Flow<List<GKSubTopicEntity>> =
+        repository.getMegaQuizSubTopics(examId)
         
     fun getLatestMegaQuizScore(): Flow<Double?> = repository.getLatestMegaQuizScore()
 
@@ -235,6 +241,36 @@ class GKViewModel(private val repository: GKRepository, private val uid: String)
                 dateTaken = System.currentTimeMillis()
             )
             repository.insertMegaQuizResult(result)
+        }
+    }
+
+    fun saveQuizResult(subTopicId: String, score: Double, total: Int, correct: Int, wrong: Int) {
+        viewModelScope.launch {
+            val result = MCQQuizResultEntity(
+                id = "qr_${System.currentTimeMillis()}",
+                subTopicId = subTopicId,
+                scorePercentage = score,
+                dateTaken = System.currentTimeMillis()
+            )
+            repository.insertQuizResult(result)
+
+            val p = todayProgress.value
+            val newProgress = if (p != null) {
+                MCQPracticeProgressEntity(
+                    dateStr = todayDateStr,
+                    totalPracticed = p.totalPracticed + total,
+                    correctCount = p.correctCount + correct,
+                    wrongCount = p.wrongCount + wrong
+                )
+            } else {
+                MCQPracticeProgressEntity(
+                    dateStr = todayDateStr,
+                    totalPracticed = total,
+                    correctCount = correct,
+                    wrongCount = wrong
+                )
+            }
+            repository.insertProgress(newProgress)
         }
     }
     

@@ -353,6 +353,19 @@ private fun getUniStyle(id: String): Triple<ImageVector, Color, Brush> {
 
 private fun getUniLogoRes(id: String): Int {
     return when (id) {
+        "du" -> R.drawable.du
+        "ju" -> R.drawable.ju
+        "ru" -> R.drawable.ru
+        "cu" -> R.drawable.cu
+        "ku" -> R.drawable.ku
+        "iu" -> R.drawable.islami_university
+        "sust" -> R.drawable.sust
+        "bup" -> R.drawable.bup
+        "jnu" -> R.drawable.jnu
+        "cou" -> R.drawable.cou
+        "jkkniu" -> R.drawable.jkkniu
+        "brur" -> R.drawable.brur
+        "bu" -> R.drawable.bu
         else -> 0 // Use icon fallback by default
     }
 }

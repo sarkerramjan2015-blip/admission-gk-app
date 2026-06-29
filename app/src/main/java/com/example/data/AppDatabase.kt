@@ -20,7 +20,7 @@ import androidx.room.TypeConverters
         MCQPracticeProgressEntity::class,
         MCQQuizResultEntity::class
     ],
-    version = 2,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

@@ -198,7 +198,7 @@ class FirestoreSyncService {
         id, title, examDate, status
     )
     private fun FirestoreMegaQuestion.toEntity() = MegaQuizQuestionEntity(
-        id, examId, questionText, options, correctAnswer, explanation
+        id, examId, questionText, options, correctAnswer, explanation, relatedSubTopicId
     )
     private fun FirestoreRecentGK.toEntity(): RecentGKEntity {
         return RecentGKEntity(

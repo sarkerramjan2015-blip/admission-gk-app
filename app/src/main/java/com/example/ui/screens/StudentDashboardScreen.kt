@@ -163,6 +163,11 @@ fun StudentDashboardScreen(viewModel: GKViewModel, navController: NavController)
                     )
                 }
 
+                // ── Today's Focus ───────────────────────
+                item {
+                    DailyFocusSection(totalPracticed, totalMegaQuizAttempts, navController)
+                }
+
                 // ── Quick Action Cards ──────────────────
                 item {
                     QuickActionsRow(navController = navController)
@@ -232,6 +237,58 @@ fun StudentDashboardScreen(viewModel: GKViewModel, navController: NavController)
     }
 }
 
+// ── Today's Focus ─────────────────────────────────────
+@Composable
+private fun DailyFocusSection(totalPracticed: Int, totalMegaQuizAttempts: Int, navController: NavController) {
+    var appeared by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { appeared = true }
+    val entAlpha by animateFloatAsState(if (appeared) 1f else 0f, tween(500), label = "df")
+
+    val mcqGoal = 50
+    val mcqDone = totalPracticed >= mcqGoal
+    val megaDone = totalMegaQuizAttempts >= 1
+
+    Column(modifier = Modifier.padding(horizontal = 16.dp).alpha(entAlpha)) {
+        SectionTitle("Today's Focus", "Details") { }
+        Spacer(Modifier.height(10.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth().shiningEffect(),
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White,
+            shadowElevation = 2.dp,
+            border = BorderStroke(1.dp, Color(0xFFE8E8F0).copy(alpha = 0.5f))
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                TaskRow("Solve $mcqGoal MCQs", mcqDone, "$totalPracticed/$mcqGoal", BrandPrimary) { navController.navigate(CategoryRoute("BANGLADESH", "Bangladesh GK")) }
+                TaskRow("Attempt a Mega Quiz", megaDone, if (megaDone) "1/1" else "0/1", MegaQuizColor) { navController.navigate(MegaQuizRoutineRoute) }
+                TaskRow("Read Today's GK", false, "Pending", SuccessColor) { navController.navigate(RecentGKRoute) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TaskRow(title: String, isDone: Boolean, progress: String, color: Color, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable(onClick = onClick).padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = if (isDone) color.copy(alpha = 0.15f) else Color(0xFFF2F2F7),
+            border = if (!isDone) BorderStroke(1.dp, Color(0xFFD4D4D4)) else null,
+            modifier = Modifier.size(28.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                if (isDone) Icon(Icons.Filled.Check, null, tint = color, modifier = Modifier.size(16.dp))
+            }
+        }
+        Spacer(Modifier.width(12.dp))
+        Text(title, style = MaterialTheme.typography.labelLarge, color = if (isDone) TextSecondary else TextPrimary, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+        Text(progress, style = MaterialTheme.typography.labelSmall, color = if (isDone) color else TextMuted, fontWeight = FontWeight.Bold)
+    }
+}
+
 // ── Dashboard Hero ────────────────────────────────────
 @Composable
 private fun DashboardHero(
@@ -257,43 +314,48 @@ private fun DashboardHero(
             .alpha(entAlpha)
             .offset(y = entOffset.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(
-                Brush.linearGradient(listOf(BrandPrimaryDeep, BrandPrimary, BrandSecondary))
-            )
+            .background(Brush.linearGradient(listOf(BrandPrimaryDeep, BrandPrimary, BrandSecondary)))
+            .shiningEffect()
             .padding(24.dp)
     ) {
-        Column {
-            Text("$greeting \uD83D\uDC4B", style = MaterialTheme.typography.labelLarge, color = Color.White.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(2.dp))
-            Text(name, style = MaterialTheme.typography.headlineMedium, color = Color.White, fontWeight = FontWeight.ExtraBold)
-
-            Spacer(Modifier.height(20.dp))
-
-            // Big stat row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                HeroStatBox(totalPracticed.toString(), "MCQs\nSolved", Modifier.weight(1f))
-                HeroStatBox("$accuracy%", "Overall\nAccuracy", Modifier.weight(1f))
-            }
-            Spacer(Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                HeroStatBox("$activeDays/$totalDays", "$monthName\nActive Days", Modifier.weight(1f))
-                HeroStatBox("$quizAttempts", "Quiz\nAttempts", Modifier.weight(1f))
-            }
+        // Decorational circles
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawCircle(Color.White, radius = 150.dp.toPx(), center = Offset(size.width * 1.1f, size.height * -0.2f), alpha = 0.05f)
+            drawCircle(Color.White, radius = 100.dp.toPx(), center = Offset(size.width * 0.8f, size.height * 1.2f), alpha = 0.05f)
         }
 
-        // Watermark emoji
-        Text(
-            "\uD83D\uDCDA",
-            fontSize = 80.sp,
-            color = Color.White.copy(alpha = 0.05f),
-            modifier = Modifier.align(Alignment.BottomEnd).offset(x = (-8).dp, y = 8.dp)
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("$greeting \uD83D\uDC4B", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.85f), fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(4.dp))
+                Text(name, style = MaterialTheme.typography.headlineSmall, color = Color.White, fontWeight = FontWeight.ExtraBold)
+
+                Spacer(Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    HeroStatBox(totalPracticed.toString(), "MCQs", Modifier.weight(1f))
+                    HeroStatBox("$activeDays", "Streak", Modifier.weight(1f))
+                    HeroStatBox("$quizAttempts", "Quizzes", Modifier.weight(1f))
+                }
+            }
+
+            Spacer(Modifier.width(16.dp))
+
+            // Circular progress for accuracy
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(90.dp)) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    drawArc(Color.White.copy(alpha = 0.2f), startAngle = 0f, sweepAngle = 360f, useCenter = false, style = Stroke(8.dp.toPx(), cap = StrokeCap.Round))
+                    drawArc(Color.White, startAngle = -90f, sweepAngle = (accuracy / 100f) * 360f, useCenter = false, style = Stroke(8.dp.toPx(), cap = StrokeCap.Round))
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("$accuracy%", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+                    Text("Accuracy", color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp)
+                }
+            }
+        }
     }
 }
 
@@ -301,17 +363,17 @@ private fun DashboardHero(
 private fun HeroStatBox(value: String, label: String, modifier: Modifier) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = Color.White.copy(alpha = 0.18f),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.28f))
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White.copy(alpha = 0.15f),
+        border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.2f))
     ) {
         Column(
-            modifier = Modifier.padding(14.dp),
+            modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(value, style = MaterialTheme.typography.headlineSmall, color = Color.White, fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(4.dp))
-            Text(label, style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.78f), textAlign = TextAlign.Center, lineHeight = 14.sp)
+            Text(value, style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(2.dp))
+            Text(label, fontSize = 10.sp, color = Color.White.copy(alpha = 0.8f), textAlign = TextAlign.Center, lineHeight = 12.sp)
         }
     }
 }
@@ -376,7 +438,7 @@ private fun WeeklyActivityCard(weekDays: List<Triple<String, Int, Boolean>>, wee
     val entAlpha by animateFloatAsState(if (appeared) 1f else 0f, tween(500), label = "wa")
 
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).alpha(entAlpha),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).alpha(entAlpha).shiningEffect(),
         shape = RoundedCornerShape(20.dp),
         color = Color.White,
         shadowElevation = 3.dp,
@@ -472,45 +534,6 @@ private fun SubjectProgressSection(bdTopicCount: Int, intTopicCount: Int, totalP
             )
         }
 
-        Spacer(Modifier.height(12.dp))
-
-        // Practice progress bar
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            color = Color.White,
-            shadowElevation = 2.dp,
-            border = BorderStroke(1.dp, Color(0xFFE8E8F0).copy(alpha = 0.5f))
-        ) {
-            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    shape = CircleShape,
-                    color = BrandAccent.copy(alpha = 0.08f),
-                    modifier = Modifier.size(44.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Filled.TrendingUp, contentDescription = null, tint = BrandAccent, modifier = Modifier.size(24.dp))
-                    }
-                }
-                Spacer(Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Daily Goal Progress", style = MaterialTheme.typography.titleSmall, color = TextPrimary, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(6.dp))
-                    val goal = 50
-                    val fraction = (totalPracticed.toFloat() / goal).coerceIn(0f, 1f)
-                    Box(
-                        modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(999.dp)).background(Color(0xFFE8E8F0))
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(fraction).height(8.dp).clip(RoundedCornerShape(999.dp))
-                                .background(Brush.horizontalGradient(listOf(BrandAccent, BrandPrimary)))
-                        )
-                    }
-                    Spacer(Modifier.height(2.dp))
-                    Text("$totalPracticed / $goal MCQs", style = MaterialTheme.typography.labelSmall, color = TextMuted)
-                }
-            }
-        }
     }
 }
 
@@ -525,7 +548,7 @@ private fun SubjectCard(
     onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier.clip(RoundedCornerShape(20.dp)).clickable(onClick = onClick),
+        modifier = modifier.clip(RoundedCornerShape(20.dp)).clickable(onClick = onClick).shiningEffect(),
         shape = RoundedCornerShape(20.dp),
         color = Color.Transparent,
         shadowElevation = 4.dp
@@ -556,7 +579,7 @@ private fun MonthlyConsistencyCard(activeDays: Int, totalDays: Int, monthName: S
     val fraction = if (totalDays > 0) activeDays.toFloat() / totalDays else 0f
 
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).alpha(entAlpha),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).alpha(entAlpha).shiningEffect(),
         shape = RoundedCornerShape(20.dp),
         color = Color.White,
         shadowElevation = 3.dp,
@@ -658,7 +681,7 @@ private fun AchievementsCard(totalPracticed: Int, totalActiveDays: Int, totalQui
         Spacer(Modifier.height(10.dp))
 
         Surface(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().shiningEffect(),
             shape = RoundedCornerShape(20.dp),
             color = Color.White,
             shadowElevation = 3.dp,
@@ -675,8 +698,11 @@ private fun AchievementsCard(totalPracticed: Int, totalActiveDays: Int, totalQui
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = if (ach.unlocked) ach.color.copy(alpha = 0.12f) else Color(0xFFF2F2F7),
-                            modifier = Modifier.size(52.dp)
+                            color = Color.Transparent,
+                            modifier = Modifier.size(52.dp).then(
+                                if (ach.unlocked) Modifier.background(Brush.linearGradient(listOf(ach.color.copy(alpha = 0.2f), ach.color.copy(alpha = 0.05f))), CircleShape)
+                                else Modifier.background(Color(0xFFF2F2F7), CircleShape)
+                            )
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Text(

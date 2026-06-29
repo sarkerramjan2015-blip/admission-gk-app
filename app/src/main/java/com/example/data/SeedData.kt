@@ -39,7 +39,9 @@ object SeedData {
             try {
                 val hasBDTopics = repository.getMainTopics("BANGLADESH").first().isNotEmpty()
                 val hasINTTopics = repository.getMainTopics("INTERNATIONAL").first().isNotEmpty()
-                Log.d("SEED_DATA", "=== Seed Check: hasBD=$hasBDTopics, hasINT=$hasINTTopics ===")
+                val hasMegaQuizExams = repository.getMegaQuizExams().first().isNotEmpty()
+                val hasMegaQuizQuestions = repository.getMegaQuizQuestions("mq_1").first().isNotEmpty()
+                Log.d("SEED_DATA", "=== Seed Check: hasBD=$hasBDTopics, hasINT=$hasINTTopics, hasMQ=$hasMegaQuizExams, hasMQQuestions=$hasMegaQuizQuestions ===")
                 if (!hasBDTopics) {
                 Log.d("SEED_DATA", ">>> BD block STARTED")
                 // Bangladesh Topics
@@ -160,167 +162,135 @@ object SeedData {
 
                 // Recent GK
                 repository.insertRecentGK(listOf(
-                    RecentGKEntity("rgk_1", "BD", "পদ্মা সেতু", "পদ্মা সেতুতে সর্বশেষ স্প্যান বসানো হয়েছে...", "", "দৈনিক ইত্তেফাক", "Rahim", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
-                    RecentGKEntity("rgk_2", "BD", "মেট্রোরেল", "মেট্রোরেলের নতুন লাইন সম্প্রসারণ...", "", "বাংলাদেশ প্রতিদিন", "", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
-                    RecentGKEntity("rgk_3", "INT", "COP 28", "COP 28 সম্মেলন দুবাইয়ে অনুষ্ঠিত...", "", "Daily Star", "", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
-                    RecentGKEntity("rgk_4", "INT", "G20 সম্মেলন", "G20 সম্মেলন ভারতে অনুষ্ঠিত...", "", "BBC", "Karim", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis())
+                    RecentGKEntity("rgk_1", "BD", "জুলাই গণ-অভ্যুত্থান ও অন্তর্বর্তী সরকার", "২০২৪-২৫ সালে ছাত্র-জনতার গণ-অভ্যুত্থানের মাধ্যমে রাজনৈতিক পটপরিবর্তন হয় এবং ড. মুহাম্মদ ইউনূসের নেতৃত্বে নতুন অন্তর্বর্তীকালীন সরকার গঠিত হয়।", "পরীক্ষার জন্য এই গণ-অভ্যুত্থানের তারিখ ও শহীদদের নাম অত্যন্ত গুরুত্বপূর্ণ।", "সংবাদপত্র", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_2", "BD", "রাষ্ট্র সংস্কারের ১১টি কমিশন", "গণঅভ্যুত্থানের পর অন্তর্বর্তীকালীন সরকার রাষ্ট্র সংস্কারের জন্য ১১টি সংস্কার কমিশন গঠন করে।", "", "সরকারি প্রজ্ঞাপন", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_3", "BD", "জুলাই জাতীয় সনদ-২০২৫", "১৭ অক্টোবর ২০২৫ তারিখে প্রধান উপদেষ্টা ও বিভিন্ন রাজনৈতিক দলের অংশগ্রহণে 'জুলাই জাতীয় সনদ-২০২৫' স্বাক্ষরিত হয়।", "", "সংবাদপত্র", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_4", "BD", "ত্রয়োদশ জাতীয় সংসদ নির্বাচন", "১২ ফেব্রুয়ারি ২০২৬ তারিখে বাংলাদেশের ত্রয়োদশ জাতীয় সংসদ নির্বাচন অনুষ্ঠিত হয়।", "", "নির্বাচন কমিশন", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_5", "BD", "সংবিধান সংস্কার ও গণভোট", "১২ ফেব্রুয়ারি ২০২৬ তারিখে 'জুলাই জাতীয় সনদ' ও সংবিধান সংস্কারের প্রস্তাবনার ওপর একটি ঐতিহাসিক গণভোট অনুষ্ঠিত হয়।", "", "সংবাদপত্র", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_6", "BD", "প্রবাসীদের ডাকযোগে ভোট", "২০২৬ সালের নির্বাচনে প্রথমবারের মতো বিদেশে অবস্থানরত প্রবাসীদের ডাকযোগে (Postal Ballot) ভোট দেওয়ার সুযোগ দেওয়া হয়।", "", "নির্বাচন কমিশন", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_7", "BD", "আওয়ামী লীগের কার্যক্রম নিষিদ্ধ", "১২ মে ২০২৫ তারিখে এক সরকারি প্রজ্ঞাপনের মাধ্যমে আওয়ামী লীগ ও এর সহযোগী সংগঠনের সব ধরনের রাজনৈতিক কার্যক্রম নিষিদ্ধ ও নিবন্ধন স্থগিত করা হয়।", "", "প্রজ্ঞাপন", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_8", "BD", "জাতীয় নাগরিক পার্টি (এনসিপি)", "বৈষম্যবিরোধী ছাত্র আন্দোলনের নেতাদের নেতৃত্বে ২৮ ফেব্রুয়ারি ২০২৫ 'জাতীয় নাগরিক পার্টি' (এনসিপি) আত্মপ্রকাশ করে।", "", "সংবাদপত্র", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_9", "BD", "শেখ হাসিনার মৃত্যুদণ্ড", "১৭ নভেম্বর ২০২৫ আন্তর্জাতিক অপরাধ ট্রাইব্যুনাল সাবেক প্রধানমন্ত্রী শেখ হাসিনা ও সাবেক স্বরাষ্ট্রমন্ত্রীকে অনুপস্থিতিতে মৃত্যুদণ্ড প্রদান করে।", "", "ট্রাইব্যুনাল", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_10", "BD", "বেগম খালেদা জিয়ার ইন্তেকাল", "৩০ ডিসেম্বর ২০২৫ তারিখে বাংলাদেশের সাবেক প্রধানমন্ত্রী ও বিএনপির চেয়ারপারসন বেগম খালেদা জিয়া মৃত্যুবরণ করেন।", "", "জাতীয় পত্রিকা", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_11", "BD", "ধানমন্ডি ৩২ নম্বর ভাঙচুর", "৫ ফেব্রুয়ারি ২০২৫ তারিখে শেখ মুজিবুর রহমানের ধানমন্ডি-৩২ এর ঐতিহাসিক বাসভবন ভাঙচুর ও ধ্বংস করা হয়।", "", "সংবাদপত্র", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_12", "BD", "যমুনা রেলসেতু উদ্বোধন", "১২ ফেব্রুয়ারি ২০২৫ যমুনা নদীর উপর বঙ্গবন্ধু শেখ মুজিব রেলওয়ে সেতুতে (যমুনা রেলসেতু) যাত্রীবাহী ট্রেন চলাচল শুরু হয়। এটি দেশের দীর্ঘতম রেলসেতু।", "দৈর্ঘ্য ৪.৮ কিলোমিটার।", "বাংলাদেশ রেলওয়ে", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_13", "BD", "শিক্ষাক্রম সংস্কার", "২১ জুন ২০২৬ তারিখে প্রাথমিক শিক্ষাক্রম সংস্কারের আনুষ্ঠানিক যাত্রা শুরু হয়। এছাড়া এসএসসি ও এইচএসসি পরীক্ষায় অভিন্ন প্রশ্নপত্র চালুর সিদ্ধান্ত গৃহীত হয়।", "", "শিক্ষা মন্ত্রণালয়", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_14", "BD", "মাতারবাড়ী গভীর সমুদ্রবন্দর", "কক্সবাজারের মহেশখালীতে নির্মিত দেশের প্রথম গভীর সমুদ্রবন্দর মাতারবাড়ী পোর্টের কার্যক্রম পুরোদমে শুরু হয়েছে।", "দেশের প্রথম গভীর সমুদ্রবন্দর।", "বন্দর কর্তৃপক্ষ", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_15", "BD", "রূপপুর পারমাণবিক বিদ্যুৎকেন্দ্র", "পাবনার ঈশ্বরদীতে অবস্থিত দেশের প্রথম পারমাণবিক বিদ্যুৎকেন্দ্র থেকে জাতীয় গ্রিডে বিদ্যুৎ সরবরাহ শুরু।", "এটি দেশের প্রথম পারমাণবিক বিদ্যুৎকেন্দ্র।", "বিদ্যুৎ মন্ত্রণালয়", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_16", "BD", "বঙ্গবন্ধু শেখ মুজিবুর রহমান টানেল", "কর্ণফুলী নদীর তলদেশে নির্মিত দেশের প্রথম টানেল, যা দক্ষিণ এশিয়ার প্রথম আন্ডারওয়াটার টানেল।", "দৈর্ঘ্য ৩.৩২ কিলোমিটার।", "সংবাদপত্র", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_17", "BD", "পদ্মা সেতুতে ট্রেন চলাচল", "ঢাকা থেকে পদ্মা সেতু হয়ে দক্ষিণ-পশ্চিমাঞ্চলে নিয়মিত ট্রেন চলাচল শুরু, যা যোগাযোগ ব্যবস্থায় যুগান্তকারী পরিবর্তন এনেছে।", "", "বাংলাদেশ রেলওয়ে", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_18", "BD", "ঢাকা এলিভেটেড এক্সপ্রেসওয়ে", "ঢাকার যানজট নিরসনে নির্মিত দেশের প্রথম এলিভেটেড এক্সপ্রেসওয়ের (উড়াল সড়ক) বিভিন্ন অংশ যান চলাচলের জন্য উন্মুক্ত করা হয়েছে।", "দেশের প্রথম এলিভেটেড এক্সপ্রেসওয়ে।", "যোগাযোগ মন্ত্রণালয়", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_19", "BD", "মেট্রোরেল (এমআরটি লাইন ৬)", "উত্তরা থেকে মতিঝিল হয়ে কমলাপুর পর্যন্ত মেট্রোরেলের (এমআরটি লাইন ৬) সম্প্রসারণ কাজ সম্পন্ন।", "দেশের প্রথম মেট্রোরেল", "DMTCL", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_20", "BD", "দেশের প্রথম পাতাল রেল", "এমআরটি লাইন-১ এর অধীনে বিমানবন্দর থেকে কমলাপুর পর্যন্ত দেশের প্রথম পাতাল রেলের (Underground Metro) নির্মাণ কাজ চলমান।", "", "DMTCL", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_21", "BD", "সেন্টমার্টিনে পর্যটক সীমিতকরণ", "পরিবেশ রক্ষায় প্রবাল দ্বীপ সেন্টমার্টিনে পর্যটকদের যাতায়াত ও রাত্রিযাপনের ওপর কড়াকড়ি আরোপ করা হয়েছে।", "", "পরিবেশ মন্ত্রণালয়", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_22", "BD", "সর্বজনীন পেনশন স্কিম", "সব বয়সের মানুষের সামাজিক নিরাপত্তা নিশ্চিত করতে চালু হওয়া সর্বজনীন পেনশন স্কিমের আওতা সম্প্রসারণ।", "স্কিমসমূহ: প্রবাস, প্রগতি, সুরক্ষা, সমতা।", "অর্থ মন্ত্রণালয়", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_23", "BD", "বাংলাদেশের তৃতীয় সাবমেরিন ক্যাবল", "ইন্টারনেট সেবার মান বাড়াতে বাংলাদেশ 'সি-মি-উই ৬' নামের তৃতীয় সাবমেরিন ক্যাবলে যুক্ত হচ্ছে।", "", "টেলিযোগাযোগ মন্ত্রণালয়", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_24", "BD", "স্মার্ট বাংলাদেশ রূপকল্প", "সরকারের 'ভিশন ২০৪১' বা স্মার্ট বাংলাদেশ গড়ার রূপকল্পের ৪টি মূলভিত্তি: স্মার্ট সিটিজেন, স্মার্ট অর্থনৈতিক, স্মার্ট সরকার ও স্মার্ট সমাজ ব্যবস্থা।", "", "তথ্য ও প্রযুক্তি মন্ত্রণালয়", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_25", "BD", "সাফ নারী চ্যাম্পিয়নশিপ", "বাংলাদেশ নারী ফুটবল দল সাফ চ্যাম্পিয়নশিপে অসাধারণ নৈপুণ্য প্রদর্শন করে পুনরায় শিরোপা জয় করেছে।", "", "বাফুফে", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_26", "BD", "ঘূর্ণিঝড় রিমাল", "বাংলাদেশের উপকূলীয় অঞ্চলে আঘাত হানা প্রবল ঘূর্ণিঝড় রিমাল, যার নামকরণ করেছিল ওমান।", "রিমাল শব্দের অর্থ বালি।", "আবহাওয়া অধিদপ্তর", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_27", "BD", "জনশুমারি ও গৃহগণনা ২০২২", "দেশের সর্বশেষ ষষ্ঠ জনশুমারি ও গৃহগণনা অনুযায়ী বর্তমান জনসংখ্যা এবং সাক্ষরতার হারের হালনাগাদ তথ্য প্রকাশ।", "ষষ্ঠ জনশুমারি।", "বিবিএস", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_28", "BD", "বঙ্গবন্ধু স্যাটেলাইট-২", "বাংলাদেশের দ্বিতীয় স্যাটেলাইট উৎক্ষেপণের জন্য কারিগরি ও প্রস্তুতিমূলক কার্যক্রম চলমান রয়েছে।", "এটি হবে আর্থ অবজারভেশন স্যাটেলাইট।", "বিটিআরসি", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_29", "BD", "বাংলাদেশের মাথাপিছু আয়", "সর্বশেষ অর্থনৈতিক সমীক্ষা অনুযায়ী বাংলাদেশের বর্তমান মাথাপিছু আয় বৃদ্ধি পেয়েছে এবং অর্থনীতি ঘুরে দাঁড়াচ্ছে।", "", "অর্থনৈতিক সমীক্ষা", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_30", "BD", "জাতীয় বাজেট ২০২৫-২৬", "বাংলাদেশের জাতীয় সংসদে ২০২৫-২৬ অর্থবছরের নতুন বাজেট পেশ করা হয়, যেখানে শিক্ষা ও স্বাস্থ্য খাতে সর্বোচ্চ গুরুত্ব দেওয়া হয়েছে।", "", "অর্থ মন্ত্রণালয়", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+
+                    RecentGKEntity("rgk_31", "INT", "ইসরায়েল-হামাস যুদ্ধবিরতি", "অক্টোবর ২০২৫-এ যুক্তরাষ্ট্রের প্রেসিডেন্ট ডোনাল্ড ট্রাম্পের মধ্যস্থতায় ইসরায়েল ও হামাসের মধ্যে একটি ঐতিহাসিক যুদ্ধবিরতি চুক্তি স্বাক্ষরিত হয়।", "মধ্যস্থতাকারীর নাম পরীক্ষায় আসতে পারে।", "আন্তর্জাতিক সংবাদ", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_32", "INT", "২৩তম ফুটবল বিশ্বকাপ ২০২৬", "২০২৬ সালের ফুটবল বিশ্বকাপ যুক্তরাষ্ট্র, কানাডা ও মেক্সিকোতে যৌথভাবে অনুষ্ঠিত হচ্ছে। এতে ৪৮টি দেশ অংশগ্রহণ করছে।", "অংশগ্রহণকারী দেশের সংখ্যা ৩২ থেকে বাড়িয়ে ৪৮ করা হয়েছে।", "FIFA", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_33", "INT", "টি-টোয়েন্টি বিশ্বকাপ ২০২৬", "২০২৬ সালে আইসিসি পুরুষ টি-টোয়েন্টি বিশ্বকাপ ভারত ও শ্রীলঙ্কায় যৌথভাবে অনুষ্ঠিত হবে।", "", "ICC", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_34", "INT", "শীতকালীন অলিম্পিক ২০২৬", "২০২৬ সালের শীতকালীন অলিম্পিক গেমস ইতালির মিলান ও কর্টিনাতে অনুষ্ঠিত হবে।", "", "Olympics", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_35", "INT", "জাতিসংঘ জলবায়ু সম্মেলন (COP)", "বৈশ্বিক জলবায়ু পরিবর্তন মোকাবেলায় জাতিসংঘ আয়োজিত সর্বশেষ জলবায়ু সম্মেলন (COP) অত্যন্ত গুরুত্বপূর্ণ সিদ্ধান্ত গ্রহণ করে।", "", "UNFCCC", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_36", "INT", "যুক্তরাষ্ট্রের ৪৭তম প্রেসিডেন্ট", "ডোনাল্ড ট্রাম্প ২০২৫ সালের ২০ জানুয়ারি যুক্তরাষ্ট্রের ৪৭তম প্রেসিডেন্ট হিসেবে আনুষ্ঠানিকভাবে শপথ গ্রহণ করেন।", "", "White House", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_37", "INT", "জাতিসংঘ ঘোষিত বর্ষ ২০২৫", "জাতিসংঘ ২০২৫ সালকে 'আন্তর্জাতিক কোঅপারেটিভ বর্ষ', 'হিমবাহ সংরক্ষণ বর্ষ' এবং 'শান্তি ও আস্থা বর্ষ' হিসেবে ঘোষণা করেছে।", "", "UN", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_38", "INT", "জাতিসংঘ ঘোষিত বর্ষ ২০২৬", "জাতিসংঘ ২০২৬ সালকে 'আন্তর্জাতিক নারী কৃষক বর্ষ', 'টেকসই উন্নয়নের জন্য স্বেচ্ছাসেবক বর্ষ' এবং 'রেঞ্জল্যান্ডস ও পশুপালক বর্ষ' হিসেবে ঘোষণা করেছে।", "", "UN", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_39", "INT", "ব্রিকস (BRICS) সম্মেলন", "ব্রিকসের সর্বশেষ শীর্ষ সম্মেলন অনুষ্ঠিত হয়, যেখানে নতুন সদস্য রাষ্ট্রগুলোর অংশগ্রহণ জোটের অর্থনৈতিক শক্তি আরও বৃদ্ধি করেছে।", "", "BRICS", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_40", "INT", "জি-২০ (G20) সম্মেলন", "বিশ্বের প্রধান অর্থনীতির দেশগুলোর জোট জি-২০ এর সর্বশেষ শীর্ষ সম্মেলন অনুষ্ঠিত হয়েছে, যেখানে জলবায়ু অর্থায়ন ও টেকসই উন্নয়ন গুরুত্ব পেয়েছে।", "", "G20", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_41", "INT", "যুক্তরাজ্যের নতুন প্রধানমন্ত্রী", "২০২৪ সালের নির্বাচনে জয়লাভ করে লেবার পার্টির নেতা কিয়ার স্টারমার যুক্তরাজ্যের নতুন প্রধানমন্ত্রী হিসেবে দায়িত্ব গ্রহণ করেন।", "", "BBC", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_42", "INT", "ন্যাটোর নতুন সদস্য", "সুইডেন আনুষ্ঠানিকভাবে ন্যাটোর (NATO) ৩২তম সদস্য হিসেবে যোগদান করেছে, যা ইউরোপের নিরাপত্তায় বড় পরিবর্তন।", "", "NATO", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_43", "INT", "কৃত্রিম বুদ্ধিমত্তা (AI) নিরাপত্তা সম্মেলন", "কৃত্রিম বুদ্ধিমত্তার ঝুঁকি মোকাবেলা ও নিরাপদ ব্যবহারের লক্ষ্যে বিশ্বব্যাপী 'গ্লোবাল এআই সেফটি সামিট' অনুষ্ঠিত হয়েছে।", "", "Tech News", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_44", "INT", "টাইম পারসন অফ দ্য ইয়ার", "টাইম ম্যাগাজিন বিশ্বজুড়ে প্রভাব বিস্তারকারী ব্যক্তি বা গোষ্ঠীকে সর্বশেষ 'পারসন অফ দ্য ইয়ার' হিসেবে নির্বাচিত করেছে।", "", "Time Magazine", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_45", "INT", "নোবেল পুরস্কার", "চিকিৎসা, পদার্থবিজ্ঞান, রসায়ন, সাহিত্য, শান্তি ও অর্থনীতিতে এ বছরের নোবেল বিজয়ীদের নাম ঘোষণা করা হয়েছে।", "শান্তি ও সাহিত্যের নোবেল পরীক্ষার জন্য বেশি গুরুত্বপূর্ণ।", "Nobel Prize", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_46", "INT", "ইউরো ২০২৪", "জার্মানিতে অনুষ্ঠিত উয়েফা ইউরো ২০২৪ ফুটবল টুর্নামেন্টে ইংল্যান্ডকে হারিয়ে স্পেন শিরোপা জয় করেছে।", "", "UEFA", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_47", "INT", "কোপা আমেরিকা ২০২৪", "যুক্তরাষ্ট্রে অনুষ্ঠিত কোপা আমেরিকা টুর্নামেন্টে কলম্বিয়াকে হারিয়ে শিরোপা জেশ করেছে আর্জেন্টিনা।", "", "CONMEBOL", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_48", "INT", "প্যারিস অলিম্পিক ২০২৪", "ফ্রান্সের প্যারিসে ৩৩তম গ্রীষ্মকালীন অলিম্পিক গেমস অনুষ্ঠিত হয়, যেখানে যুক্তরাষ্ট্র সর্বোচ্চ পদক জয় করে।", "", "Olympics", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_49", "INT", "আন্তর্জাতিক অপরাধ আদালত (ICC)", "যুদ্ধাপরাধের দায়ে আন্তর্জাতিক অপরাধ আদালত (ICC) গুরুত্বপূর্ণ রাজনৈতিক নেতাদের বিরুদ্ধে গ্রেপ্তারি পরোয়ানা জারি করেছে।", "", "ICC", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_50", "INT", "ভারতের মহাকাশ অভিযান (গগনযান)", "ভারতের প্রথম মানববাহী মহাকাশ অভিযান 'গগনযান' (Gaganyaan) এর প্রস্তুতি চূড়ান্ত পর্যায়ে পৌঁছেছে।", "", "ISRO", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_51", "INT", "চাঁদে বাণিজ্যিক অবতরণ", "ইতিহাসে প্রথমবারের মতো কোনো বেসরকারি বাণিজ্যিক মহাকাশযান সফলভাবে চাঁদের বুকে অবতরণ করেছে।", "", "SpaceX/NASA", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_52", "INT", "আইসিসি চ্যাম্পিয়ন্স ট্রফি ২০২৫", "২০২৫ সালের আইসিসি চ্যাম্পিয়ন্স ট্রফি ক্রিকেট টুর্নামেন্ট পাকিস্তানে অনুষ্ঠিত হবে।", "", "ICC", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_53", "INT", "মাঙ্কিপক্স (Mpox) স্বাস্থ্য জরুরি অবস্থা", "বিশ্ব স্বাস্থ্য সংস্থা (WHO) মাঙ্কিপক্স (Mpox) ভাইরাসের প্রাদুর্ভাবকে বৈশ্বিক জনস্বাস্থ্য জরুরি অবস্থা হিসেবে ঘোষণা করেছে।", "", "WHO", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_54", "INT", "অস্কার পুরস্কার", "লস অ্যাঞ্জেলেসে অনুষ্ঠিত সর্বশেষ একাডেমি অ্যাওয়ার্ডসে (অস্কার) শ্রেষ্ঠ চলচ্চিত্র এবং কলাকুশলীদের পুরস্কৃত করা হয়েছে।", "", "Academy", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis()),
+                    RecentGKEntity("rgk_55", "INT", "আন্তর্জাতিক বুকার পুরস্কার", "বিশ্ব সাহিত্যের অন্যতম মর্যাদাপূর্ণ পুরস্কার 'আন্তর্জাতিক বুকার পুরস্কার' এ বছর শ্রেষ্ঠ অনুবাদ সাহিত্যের জন্য প্রদান করা হয়েছে।", "", "Booker", "Admin", "APPROVED", System.currentTimeMillis(), System.currentTimeMillis())
                 ))
 
-                // ── Mega Quiz Exams (3টি, বাংলায়) ──
-                // mq_1: আজ LIVE, mq_2: 7 দিন পরে, mq_3: 15 দিন পরে
+                // ── Mega Quiz Exams & Questions — independent seeding block ──
+                if (!hasMegaQuizExams || !hasMegaQuizQuestions) {
+                Log.d("SEED_DATA", ">>> MegaQuiz block STARTED")
                 val now = System.currentTimeMillis()
-                repository.insertMegaQuizExams(listOf(
-                    MegaQuizExamEntity("mq_1", "মেগা কুইজ ১: বাংলাদেশের ইতিহাস ও সংস্কৃতি", now + 60000, "LIVE"),
-                    MegaQuizExamEntity("mq_2", "মেগা কুইজ ২: আন্তর্জাতিক বিষয়াবলি ও ভূগোল", now + 604800000, "UPCOMING"),
-                    MegaQuizExamEntity("mq_3", "মেগা কুইজ ৩: বিজ্ঞান, প্রযুক্তি ও সাধারণ জ্ঞান", now + 1296000000, "UPCOMING")
-                ))
-
-                // ── Mega Quiz Questions (30 per exam, 90 total, Bengali) ──
+                val allMainTopics = repository.getAllMainTopicsSync()
+                val allSubTopics = repository.getAllSubTopicsSync()
+                val allMCQs = repository.getAllMCQsSync()
+                
+                val mcqsBySubtopic = allMCQs.groupBy { it.subTopicId }
+                val subTopicsByMainTopic = allSubTopics.groupBy { it.parentTopicId }
+                
+                val megaExams = mutableListOf<MegaQuizExamEntity>()
                 val mqQuestions = mutableListOf<MegaQuizQuestionEntity>()
-                val qData = listOf(
-                    // mq_1: বাংলাদেশের ইতিহাস ও সংস্কৃতি (30 questions)
-                    listOf(
-                        "বাংলাদেশের মুক্তিযুদ্ধ কত সালে সংঘটিত হয়?" to "১৯৭১",
-                        "বাংলাদেশের জাতীয় পতাকার ডিজাইনার কে?" to "শিব নারায়ণ দাস",
-                        "বাংলাদেশের জাতীয় সংগীতের রচয়িতা কে?" to "রবীন্দ্রনাথ ঠাকুর",
-                        "বাংলাদেশের জাতীয় ফুলের নাম কি?" to "শাপলা",
-                        "বাংলাদেশের জাতীয় মাছের নাম কি?" to "ইলিশ",
-                        "বাংলাদেশের জাতীয় পশুর নাম কি?" to "রয়েল বেঙ্গল টাইগার",
-                        "জাতীয় স্মৃতিসৌধ কোথায় অবস্থিত?" to "সাভার",
-                        "মুজিবনগর সরকার কবে গঠিত হয়?" to "১০ এপ্রিল ১৯৭১",
-                        "বাংলাদেশের প্রথম রাষ্ট্রপতি কে ছিলেন?" to "শেখ মুজিবুর রহমান",
-                        "৬ দফা দাবি কত সালে উত্থাপিত হয়?" to "১৯৬৬",
-                        "বাংলা একাডেমি কত সালে প্রতিষ্ঠিত হয়?" to "১৯৫৫",
-                        "ভাষা আন্দোলনের প্রথম শহীদ কে?" to "রফিক উদ্দিন আহমদ",
-                        "২১ শে ফেব্রুয়ারি আন্তর্জাতিক মাতৃভাষা দিবস কবে স্বীকৃতি পায়?" to "১৯৯৯",
-                        "বাংলাদেশের সুপ্রিম কোর্ট কোথায় অবস্থিত?" to "ঢাকা",
-                        "বাংলাদেশের প্রথম অস্থায়ী রাষ্ট্রপতি কে ছিলেন?" to "সৈয়দ নজরুল ইসলাম",
-                        "বাংলাদেশের প্রথম প্রধানমন্ত্রী কে ছিলেন?" to "তাজউদ্দীন আহমদ",
-                        "বাংলাদেশ কবে জাতিসংঘের সদস্যপদ লাভ করে?" to "১৭ সেপ্টেম্বর ১৯৭৪",
-                        "অপারেশন সার্চলাইট কবে শুরু হয়?" to "২৫ মার্চ ১৯৭১",
-                        "বাংলাদেশের স্বাধীনতার ঘোষণা কে দেন?" to "বঙ্গবন্ধু শেখ মুজিবুর রহমান",
-                        "৬ দফার প্রথম দফা কি ছিল?" to "প্রাদেশিক স্বায়ত্তশাসন",
-                        "বীরশ্রেষ্ঠ কতজন?" to "৭ জন",
-                        "বাংলাদেশের জাতীয় পাখির নাম কি?" to "দোয়েল",
-                        "বাংলাদেশের জাতীয় গাছের নাম কি?" to "আম",
-                        "পদ্মা সেতুর দৈর্ঘ্য কত?" to "৬.১৫ কি.মি.",
-                        "বাংলাদেশের সর্বোচ্চ পর্বতশৃঙ্গ কোনটি?" to "তাজিংডং",
-                        "সুন্দরবনের আয়তন কত?" to "১০,০০০ বর্গ কি.মি.",
-                        "মহাস্থানগড় কোন জেলায় অবস্থিত?" to "বগুড়া",
-                        "বাংলাদেশের জাতীয় জাদুঘর কোথায়?" to "শাহবাগ, ঢাকা",
-                        "বাংলাদেশের সংবিধান কবে গৃহীত হয়?" to "৪ নভেম্বর ১৯৭২",
-                        "বাংলাদেশের সংবিধানে মোট কয়টি ভাগ আছে?" to "১১টি"
-                    ),
-                    // mq_2: আন্তর্জাতিক বিষয়াবলি ও ভূগোল (30)
-                    listOf(
-                        "জাতিসংঘ কত সালে প্রতিষ্ঠিত হয়?" to "১৯৪৫",
-                        "জাতিসংঘের বর্তমান মহাসচিব কে?" to "আন্তোনিও গুতেরেস",
-                        "বিশ্বের বৃহত্তম মহাদেশ কোনটি?" to "এশিয়া",
-                        "বিশ্বের বৃহত্তম মহাসাগর কোনটি?" to "প্রশান্ত মহাসাগর",
-                        "ভারতের বর্তমান প্রধানমন্ত্রী কে?" to "নরেন্দ্র মোদি",
-                        "SAARC কত সালে প্রতিষ্ঠিত হয়?" to "১৯৮৫",
-                        "SAARC-এর সদর দপ্তর কোথায়?" to "কাঠমান্ডু, নেপাল",
-                        "BRICS-এর সদস্য দেশ কয়টি?" to "১১টি",
-                        "G20-এর বর্তমান সভাপতি দেশ কোনটি?" to "দক্ষিণ আফ্রিকা",
-                        "ওআইসি(OIC)-এর সদর দপ্তর কোথায়?" to "জেদ্দা, সৌদি আরব",
-                        "বিশ্বের সবচেয়ে ছোট দেশ কোনটি?" to "ভ্যাটিকান সিটি",
-                        "নায়াগ্রা জলপ্রপাত কোথায় অবস্থিত?" to "যুক্তরাষ্ট্র-কানাডা সীমান্তে",
-                        "পানামা খাল কোন দুটি মহাসাগরকে সংযুক্ত করে?" to "প্রশান্ত ও আটলান্টিক",
-                        "সুয়েজ খাল কোন দেশে অবস্থিত?" to "মিশর",
-                        "বিশ্বের দীর্ঘতম নদী কোনটি?" to "নীল নদ",
-                        "অ্যামাজন নদী কোন মহাদেশে?" to "দক্ষিণ আমেরিকা",
-                        "আন্তর্জাতিক অপরাধ আদালত(ICC) কোথায়?" to "হেগ, নেদারল্যান্ডস",
-                        "ইউরোপীয় ইউনিয়নের(EU) সদস্য দেশ কয়টি?" to "২৭টি",
-                        "বিশ্ব স্বাস্থ্য সংস্থা(WHO) কবে প্রতিষ্ঠিত হয়?" to "১৯৪৮",
-                        "UNESCO-এর সদর দপ্তর কোথায়?" to "প্যারিস, ফ্রান্স",
-                        "কোপেনহেগেন কোন দেশের রাজধানী?" to "ডেনমার্ক",
-                        "বিশ্বের বৃহত্তম মরুভূমি কোনটি?" to "সাহারা",
-                        "মাউন্ট এভারেস্টের উচ্চতা কত?" to "৮,৮৪৮ মিটার",
-                        "ইউরোপের দীর্ঘতম নদী কোনটি?" to "ভলগা",
-                        "ওপেক(OPEC)-এর সদর দপ্তর কোথায়?" to "ভিয়েনা, অস্ট্রিয়া",
-                        "আন্তর্জাতিক মুদ্রা তহবিল(IMF) কবে প্রতিষ্ঠিত হয়?" to "১৯৪৪",
-                        "বিশ্বব্যাংকের সদর দপ্তর কোথায়?" to "ওয়াশিংটন ডি.সি.",
-                        "Commonwealth কবে প্রতিষ্ঠিত হয়?" to "১৯৩১",
-                        "রেড ক্রস কবে প্রতিষ্ঠিত হয়?" to "১৮৬৩",
-                        "GRAMEEN Bank কবে প্রতিষ্ঠিত হয়?" to "১৯৮৩"
-                    ),
-                    // mq_3: বিজ্ঞান, প্রযুক্তি ও সাধারণ জ্ঞান (30)
-                    listOf(
-                        "পানির রাসায়নিক সংকেত কি?" to "H₂O",
-                        "সূর্যের আলো পৃথিবীতে আসতে কত সময় লাগে?" to "৮ মিনিট ২০ সেকেন্ড",
-                        "DNA-এর পূর্ণরূপ কি?" to "Deoxyribonucleic Acid",
-                        "মানব দেহে কয়টি হাড় আছে?" to "২০৬টি",
-                        "লোহিত রক্তকণিকার আয়ুষ্কাল কত?" to "১২০ দিন",
-                        "ইন্টারনেটের জনক কাকে বলা হয়?" to "ভিন্টন সার্ফ",
-                        "কম্পিউটারের জনক কে?" to "চার্লস ব্যাবেজ",
-                        "প্রথম কৃত্রিম উপগ্রহ কোনটি?" to "স্পুটনিক-১",
-                        "চাঁদে প্রথম কে পৌঁছান?" to "নীল আর্মস্ট্রং",
-                        "বাংলাদেশের প্রথম স্যাটেলাইট কোনটি?" to "বঙ্গবন্ধু স্যাটেলাইট-১",
-                        "একটি কম্পিউটারের মস্তিষ্ক বলা হয় কাকে?" to "CPU",
-                        "WiFi-এর পূর্ণরূপ কি?" to "Wireless Fidelity",
-                        "পারমাণবিক বোমার আবিষ্কারক কে?" to "জে. রবার্ট ওপেনহাইমার",
-                        "পেনিসিলিন কে আবিষ্কার করেন?" to "আলেকজান্ডার ফ্লেমিং",
-                        "এক্স-রে কে আবিষ্কার করেন?" to "উইলহেম রন্টজেন",
-                        "টেলিফোন কে আবিষ্কার করেন?" to "আলেকজান্ডার গ্রাহাম বেল",
-                        "এক মিটার সমান কত সেন্টিমিটার?" to "১০০",
-                        "এক কিলোমিটার সমান কত মিটার?" to "১০০০",
-                        "সৌরজগতের বৃহত্তম গ্রহ কোনটি?" to "বৃহস্পতি",
-                        "পৃথিবীর নিকটতম গ্রহ কোনটি?" to "শুক্র",
-                        "মহাকর্ষ বলের আবিষ্কারক কে?" to "আইজ্যাক নিউটন",
-                        "E=mc² সূত্রটি কার?" to "আলবার্ট আইনস্টাইন",
-                        "মানুষের ক্রোমোজোম সংখ্যা কত?" to "২৩ জোড়া",
-                        "এইডস(AIDS) রোগের ভাইরাসের নাম কি?" to "HIV",
-                        "HTML-এর পূর্ণরূপ কি?" to "HyperText Markup Language",
-                        "RAM-এর পূর্ণরূপ কি?" to "Random Access Memory",
-                        "বাংলাদেশের প্রথম নিউক্লিয়ার বিদ্যুৎকেন্দ্র কোথায়?" to "রূপপুর, পাবনা",
-                        "কাগজ কে আবিষ্কার করেন?" to "সাই লুন (চীন)",
-                        "বিশ্বের দ্রুততম কম্পিউটার কোনটি?" to "Frontier",
-                        "HTTP-এর পূর্ণরূপ কি?" to "HyperText Transfer Protocol"
+                
+                allMainTopics.forEachIndexed { index, mainTopic ->
+                    val examId = "mq_${mainTopic.id}"
+                    // Set the first as COMPLETED, second as LIVE, rest as UPCOMING
+                    val status = when (index) {
+                        0 -> "COMPLETED"
+                        1 -> "LIVE"
+                        else -> "UPCOMING"
+                    }
+                    // Space exams by 1 week each, starting from last week
+                    val examDate = now + (index - 1) * 86400000L * 7 
+                    
+                    val examTitle = if (mainTopic.category == "BD") {
+                        "মেগা কুইজ (বাংলাদেশ): ${mainTopic.title}"
+                    } else {
+                        "মেগা কুইজ (আন্তর্জাতিক): ${mainTopic.title}"
+                    }
+
+                    megaExams.add(
+                        MegaQuizExamEntity(
+                            id = examId,
+                            title = examTitle,
+                            examDate = examDate,
+                            status = status
+                        )
                     )
-                )
-
-                val examIds = listOf("mq_1", "mq_2", "mq_3")
-                val distractorSets = listOf(
-                    listOf("১৯৪৭", "১৯৫২", "১৯৭২"), listOf("জয়নুল আবেদীন", "কামরুল হাসান", "এস এম সুলতান"),
-                    listOf("কাজী নজরুল ইসলাম", "জসীমউদ্দীন", "লালন শাহ"), listOf("গোলাপ", "পদ্ম", "শিউলি"),
-                    listOf("রুই", "কাতলা", "মৃগেল"), listOf("হরিণ", "হাতি", "শিয়াল"),
-                    listOf("মিরপুর", "গাজীপুর", "নারায়ণগঞ্জ"), listOf("১৭ এপ্রিল ১৯৭১", "২৬ মার্চ ১৯৭১", "১৬ ডিসেম্বর ১৯৭১"),
-                    listOf("সৈয়দ নজরুল ইসলাম", "খন্দকার মোশতাক আহমেদ", "জিয়াউর রহমান"), listOf("১৯৬২", "১৯৬৯", "১৯৭০"),
-                    listOf("১৯৫২", "১৯৫৬", "১৯৬০"), listOf("শফিকুর রহমান", "আবুল বরকত", "আব্দুল জব্বার"),
-                    listOf("১৯৯৮", "২০০০", "২০০১"), listOf("চট্টগ্রাম", "রাজশাহী", "খুলনা"),
-                    listOf("তাজউদ্দীন আহমদ", "খন্দকার মোশতাক", "জিয়াউর রহমান"), listOf("সৈয়দ নজরুল ইসলাম", "শেখ মুজিবুর রহমান", "ক্যাপ্টেন মনসুর আলী"),
-                    listOf("১৯৭২", "১৯৭৩", "১৯৭৫"), listOf("২৬ মার্চ ১৯৭১", "১৬ ডিসেম্বর ১৯৭১", "৭ মার্চ ১৯৭১"),
-                    listOf("জিয়াউর রহমান", "তাজউদ্দীন আহমদ", "এম এ জি ওসমানী"), listOf("পূর্ণ স্বাধীনতা", "অর্থনৈতিক বৈষম্য দূরীকরণ", "ভাষার অধিকার"),
-                    listOf("৫", "৮", "১০"), listOf("ময়না", "কাক", "চড়ুই"),
-                    listOf("কাঁঠাল", "জাম", "লিচু"), listOf("৪.৮ কি.মি.", "৫.৫ কি.মি.", "৭ কি.মি."),
-                    listOf("কেওক্রাডং", "গারো পাহাড়", "সীতাকুণ্ড"), listOf("৬,০০০", "৮,০০০", "১২,০০০"),
-                    listOf("রাজশাহী", "দিনাজপুর", "পাবনা"), listOf("মতিঝিল", "ধানমন্ডি", "গুলশান"),
-                    listOf("১৬ ডিসেম্বর ১৯৭২", "২৬ মার্চ ১৯৭২", "১ জানুয়ারি ১৯৭৩"), listOf("৯টি", "১২টি", "১৫টি")
-                )
-
-                // Build 90 questions with realistic distractors
-                fun buildMqOptions(correct: String, distIdx: Int): String {
-                    val all = distractorSets[distIdx % distractorSets.size].toMutableList()
-                    all.add(correct); all.shuffle(); return all.joinToString("\",\"", "[\"", "\"]")
-                }
-
-                qData.forEachIndexed { examIndex, questions ->
-                    val examId = examIds[examIndex]
-                    questions.forEachIndexed { qi, (qText, correct) ->
-                        val distIdx = examIndex * 30 + qi
+                    
+                    val subTopicsForExam = subTopicsByMainTopic[mainTopic.id] ?: emptyList()
+                    val mcqsForExam = mutableListOf<MCQQuestionEntity>()
+                    subTopicsForExam.forEach { subTopic ->
+                        val subTopicMcqs = mcqsBySubtopic[subTopic.id] ?: emptyList()
+                        mcqsForExam.addAll(subTopicMcqs)
+                    }
+                    
+                    // Shuffle and take up to 30 questions to keep the quiz length manageable
+                    mcqsForExam.shuffle()
+                    val selectedMcqs = mcqsForExam.take(30)
+                    
+                    selectedMcqs.forEachIndexed { qi, mcq ->
                         mqQuestions.add(
                             MegaQuizQuestionEntity(
                                 id = "${examId}_q${qi + 1}",
                                 examId = examId,
-                                questionText = qText,
-                                options = buildMqOptions(correct, distIdx),
-                                correctAnswer = correct,
-                                explanation = ""
+                                questionText = mcq.questionText,
+                                options = mcq.options,
+                                correctAnswer = mcq.correctAnswer,
+                                explanation = mcq.explanation,
+                                relatedSubTopicId = mcq.subTopicId
                             )
                         )
                     }
                 }
+                
+                repository.insertMegaQuizExams(megaExams)
                 repository.insertMegaQuizQuestions(mqQuestions)
+                Log.d("SEED_DATA", "MegaQuiz Exams inserted: ${megaExams.size}")
+                Log.d("SEED_DATA", "MegaQuiz Questions inserted: ${mqQuestions.size}")
+                } // end if (!hasMegaQuizExams)
 
                 // ── Universities (IDs match UI) ──
                 repository.insertUniversities(listOf(

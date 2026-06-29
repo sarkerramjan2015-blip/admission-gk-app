@@ -17,8 +17,23 @@ interface GKDao {
     @Query("SELECT * FROM gk_sub_topics WHERE id = :subTopicId")
     fun getSubTopicById(subTopicId: String): Flow<GKSubTopicEntity?>
 
+    @Query("SELECT * FROM gk_sub_topics ORDER BY orderIndex ASC")
+    fun getAllSubTopics(): Flow<List<GKSubTopicEntity>>
+
+    @Query("SELECT * FROM gk_sub_topics ORDER BY orderIndex ASC")
+    suspend fun getAllSubTopicsSync(): List<GKSubTopicEntity>
+
+    @Query("SELECT * FROM gk_main_topics ORDER BY orderIndex ASC")
+    suspend fun getAllMainTopicsSync(): List<GKMainTopicEntity>
+
+    @Query("SELECT * FROM mcq_questions WHERE status = 'APPROVED'")
+    suspend fun getAllMCQsSync(): List<MCQQuestionEntity>
+
     @Query("SELECT * FROM mcq_questions WHERE subTopicId = :subTopicId AND status = 'APPROVED'")
     fun getMCQsForSubTopic(subTopicId: String): Flow<List<MCQQuestionEntity>>
+
+    @Query("SELECT * FROM mcq_questions WHERE subTopicId = :subTopicId AND status = 'APPROVED'")
+    suspend fun getMCQsForSubTopicSync(subTopicId: String): List<MCQQuestionEntity>
 
     @Query("SELECT * FROM recent_gk WHERE category = :category AND status = 'APPROVED' ORDER BY createdAt DESC")
     fun getRecentGK(category: String): Flow<List<RecentGKEntity>>
@@ -28,6 +43,9 @@ interface GKDao {
 
     @Query("SELECT * FROM mega_quiz_questions WHERE examId = :examId")
     fun getMegaQuizQuestions(examId: String): Flow<List<MegaQuizQuestionEntity>>
+
+    @Query("SELECT DISTINCT t.* FROM gk_sub_topics t INNER JOIN mega_quiz_questions q ON t.id = q.relatedSubTopicId WHERE q.examId = :examId")
+    fun getMegaQuizSubTopics(examId: String): Flow<List<GKSubTopicEntity>>
 
     @Query("SELECT * FROM universities ORDER BY orderIndex ASC")
     fun getUniversities(): Flow<List<UniversityEntity>>

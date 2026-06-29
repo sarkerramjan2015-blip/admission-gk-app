@@ -1,23 +1,15 @@
 package com.example.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,391 +22,548 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.data.GKSubTopicEntity
 import com.example.ui.GKViewModel
-import com.example.ui.components.AdmissionTopBar
-import com.example.ui.navigation.*
+import com.example.ui.navigation.MCQPracticeRoute
+import com.example.ui.navigation.MCQQuizRoute
+import com.example.ui.navigation.MegaQuizRoutineRoute
+import com.example.ui.navigation.SubTopicDetailRoute
 import com.example.ui.theme.*
 
-// ── Main Screen ──────────────────────────────────────────────
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TopicListScreen(
-    topicId: String, title: String, viewModel: GKViewModel, navController: NavController,
-) {
-    val subTopicsResult by remember(topicId) { viewModel.getSubTopics(topicId) }
-        .collectAsStateWithLifecycle(initialValue = emptyList())
+private val Accent = Color(0xFF00BFA5)
+private val AccentDark = Color(0xFF00897B)
+private val AccentLight = Color(0xFFB2DFDB)
 
-    Scaffold(
-        topBar = {
-            AdmissionTopBar(title = "Admission GK", subtitle = title, showBack = true, onBack = { navController.popBackStack() }, useGradient = true)
-        },
-        containerColor = AppBackground
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val d = 1.dp.toPx(); val sp = 20.dp.toPx()
-                val cs = (size.width / sp).toInt(); val rs = (size.height / sp).toInt()
-                for (i in 0..cs) for (j in 0..rs) drawCircle(BrandPrimary.copy(alpha = 0.04f), d, Offset(i * sp, j * sp))
-            }
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3), modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(10.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+private val AccentColors = listOf(
+    Color(0xFF4DB6AC), Color(0xFF7986CB), Color(0xFFFF8A65),
+    Color(0xFF9575CD), Color(0xFF64B5F6), Color(0xFF81C784),
+    Color(0xFFFFB74D), Color(0xFFE57373), Color(0xFF4DD0E1),
+    Color(0xFFBA68C8), Color(0xFFAED581), Color(0xFFFFD54F),
+    Color(0xFF4FC3F7), Color(0xFFF06292), Color(0xFFA1887F),
+    Color(0xFF90A4AE)
+)
+
+private val topicIcons = listOf(
+    "🗺️", "💧", "🌤️", "🌾", "🏛️", "🚇",
+    "👥", "📜", "⚖️", "🗳️", "🏠", "🌍",
+    "📖", "📌", "🎭", "📡"
+)
+
+// ───────────── NAV HELPERS ─────────────
+
+fun nav(controller: NavController, route: Any) {
+    controller.navigate(route) { launchSingleTop = true }
+}
+
+// ────────────── HEADER ──────────────
+
+@Composable
+fun SubTopicListHeader(total: Int, accent: Color) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
+        shadowElevation = 3.dp
+    ) {
+        Row(
+            Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                Modifier.size(36.dp).background(
+                    brush = Brush.linearGradient(listOf(accent, accent.copy(alpha = 0.5f))),
+                    shape = CircleShape
+                ),
+                contentAlignment = Alignment.Center
             ) {
-                item(span = { GridItemSpan(3) }) { CompactListHeader(title, subTopicsResult.size) }
-                itemsIndexed(subTopicsResult) { i, st ->
-                    SubTopicGridCard(subTopic = st, index = i, nav = navController)
-                }
-                item(span = { GridItemSpan(3) }) { MiniQuizBanner { navController.navigate(MegaQuizRoutineRoute) } }
+                Text("📖", fontSize = 18.sp)
+            }
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(
+                    "Sub Topics",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    "$total topics available",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
 }
 
-// ── Compact Header ───────────────────────────────────────────
-@Composable
-private fun CompactListHeader(title: String, count: Int) {
-    var vis by remember { mutableStateOf(false) }; LaunchedEffect(Unit) { vis = true }
-    val a by animateFloatAsState(if (vis) 1f else 0f, tween(400), label = "ha")
-    Column(modifier = Modifier.alpha(a).padding(bottom = 4.dp)) {
-        Surface(color = BrandPrimary.copy(alpha = 0.08f), shape = RoundedCornerShape(percent = 50), modifier = Modifier.padding(bottom = 6.dp)) {
-            Text("$count টি উপ-বিষয়", color = BrandPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 3.dp))
-        }
-        Text(title, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = TextPrimary)
-    }
-}
+// ────────────── GRID CARD (static, no expansion) ──────────────
 
-// ── Sub-topic Grid Card with Premium Popup ───────────────────
 @Composable
-private fun SubTopicGridCard(
+fun SubTopicGridCard(
     subTopic: GKSubTopicEntity,
-    index: Int,
-    nav: NavController,
+    colorIndex: Int,
+    onClick: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    var vis by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { vis = true }
+    val accent = AccentColors[colorIndex % AccentColors.size]
+    val icon = topicIcons.getOrElse(colorIndex % topicIcons.size) { "📖" }
+    var pressAnim by remember { mutableFloatStateOf(1f) }
+    val scale by animateFloatAsState(pressAnim, spring(0.6f, 300f), label = "")
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
 
-    val a by animateFloatAsState(
-        targetValue = if (vis) 1f else 0f,
-        animationSpec = tween(350, delayMillis = index * 60),
-        label = "sa"
-    )
-    val s by animateFloatAsState(
-        targetValue = if (vis) 1f else 0.85f,
-        animationSpec = tween(350, delayMillis = index * 60),
-        label = "ss"
-    )
-    val (icon, tint) = subTopicStyle(index)
+    LaunchedEffect(pressed) { pressAnim = if (pressed) 0.93f else 1f }
+
+    val shape = RoundedCornerShape(14.dp)
+    val borderClr = accent.copy(alpha = 0.25f)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .alpha(a)
-            .scale(s)
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMediumLow
+            .height(120.dp)
+            .scale(scale)
+            .shadow(1.5.dp, shape, spotColor = accent.copy(alpha = 0.15f)),
+        shape = shape,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(0.5.dp, borderClr),
+        onClick = onClick,
+        interactionSource = interaction
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            // Gradient header
+            Box(
+                Modifier.fillMaxWidth().height(3.dp).background(
+                    Brush.horizontalGradient(listOf(accent, accent.copy(alpha = 0.3f)))
                 )
             )
-            .clickable { expanded = !expanded },
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = AppSurface),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (expanded) 6.dp else 1.5.dp),
-        border = BorderStroke(if (expanded) 1.2.dp else 0.5.dp, if (expanded) tint.copy(alpha = 0.4f) else AppOutlineSoft)
-    ) {
-        Column(
-            modifier = Modifier.padding(10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Icon
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .background(tint.copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
-                contentAlignment = Alignment.Center
+            Column(
+                Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 6.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Icon(icon, null, tint = tint, modifier = Modifier.size(20.dp))
-            }
-            Spacer(Modifier.height(6.dp))
-
-            // Title
-            Text(
-                subTopic.title,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 12.sp,
-                color = TextPrimary,
-                textAlign = TextAlign.Center,
-                maxLines = if (expanded) Int.MAX_VALUE else 2,
-                overflow = TextOverflow.Ellipsis,
-                lineHeight = 16.sp
-            )
-
-            // ── Premium Popup Action Card ──────────────────
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    )
-                ) + fadeIn(tween(250)),
-                exit = shrinkVertically(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    )
-                ) + fadeOut(tween(180))
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                ) {
-                    // Divider line
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(1.dp)
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        tint.copy(alpha = 0.3f),
-                                        tint.copy(alpha = 0.5f),
-                                        tint.copy(alpha = 0.3f),
-                                        Color.Transparent
-                                    )
-                                )
-                            )
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-
-                    // Action buttons with shimmer
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(5.dp)
-                    ) {
-                        ShimmerActionButton(
-                            label = "✦ স্পেশাল নোট",
-                            subtitle = "বিস্তারিত পড়ুন",
-                            icon = Icons.Filled.Description,
-                            accentColor = Color(0xFF0D9488),
-                            gradientColors = listOf(Color(0xFF0D9488), Color(0xFF059669)),
-                            onClick = { nav.navigate(SubTopicDetailRoute(subTopic.id, subTopic.title)) }
-                        )
-
-                        ShimmerActionButton(
-                            label = "✧ MCQ প্র্যাকটিস",
-                            subtitle = "অনুশীলন করুন",
-                            icon = Icons.Filled.Quiz,
-                            accentColor = Color(0xFF4F46E5),
-                            gradientColors = listOf(Color(0xFF4F46E5), Color(0xFF7C3AED)),
-                            onClick = { nav.navigate(MCQPracticeRoute(subTopic.id)) }
-                        )
-
-                        ShimmerActionButton(
-                            label = "◈ MCQ কুইজ",
-                            subtitle = "সময়সহ কুইজ",
-                            icon = Icons.Filled.Timer,
-                            accentColor = Color(0xFFEA580C),
-                            gradientColors = listOf(Color(0xFFEA580C), Color(0xFFDC2626)),
-                            onClick = { nav.navigate(MCQQuizRoute(subTopic.id)) }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// ── Shimmer Action Button (Premium) ──────────────────────────
-@Composable
-private fun ShimmerActionButton(
-    label: String,
-    subtitle: String,
-    icon: ImageVector,
-    accentColor: Color,
-    gradientColors: List<Color>,
-    onClick: () -> Unit,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    // Scale down on press with bouncy spring
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.93f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "btnScale"
-    )
-
-    // Shimmer sweep
-    val inf = rememberInfiniteTransition(label = "shimmer")
-    val shimmerOffset by inf.animateFloat(
-        initialValue = -0.5f,
-        targetValue = 1.5f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shimmerOffset"
-    )
-    val glowAlpha by inf.animateFloat(
-        initialValue = 0.0f,
-        targetValue = 0.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1400, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glowAlpha"
-    )
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .scale(scale)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            ),
-        shape = RoundedCornerShape(10.dp),
-        color = accentColor.copy(alpha = 0.06f),
-        border = BorderStroke(0.8.dp, accentColor.copy(alpha = 0.2f))
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 7.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Icon box with shimmer glow
+                // Icon
                 Box(
-                    modifier = Modifier
-                        .size(30.dp)
-                        .drawBehind {
-                            // Base gradient
-                            drawRoundRect(
-                                brush = Brush.linearGradient(gradientColors.map { it.copy(alpha = 0.12f + glowAlpha) }),
-                                cornerRadius = CornerRadius(8.dp.toPx())
-                            )
-                            // Shimmer sweep highlight
-                            val sweepW = size.width * 0.6f
-                            val x = shimmerOffset * (size.width + sweepW) - sweepW * 0.5f
-                            drawRoundRect(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.White.copy(alpha = glowAlpha * 2.5f),
-                                        Color.Transparent
-                                    ),
-                                    startX = x - sweepW * 0.5f,
-                                    endX = x + sweepW * 0.5f
-                                ),
-                                cornerRadius = CornerRadius(8.dp.toPx())
-                            )
-                        },
+                    Modifier.size(38.dp).background(
+                        brush = Brush.radialGradient(
+                            listOf(accent.copy(alpha = 0.2f), Color.Transparent)
+                        ),
+                        shape = CircleShape
+                    ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(icon, null, tint = accentColor, modifier = Modifier.size(16.dp))
+                    Text(icon, fontSize = 18.sp)
                 }
-
-                Spacer(Modifier.width(10.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        label,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp,
-                        color = accentColor
+                Spacer(Modifier.weight(1f))
+                // Title
+                Text(
+                    subTopic.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 14.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(2.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = accent,
+                        modifier = Modifier.size(12.dp)
                     )
+                    Spacer(Modifier.width(2.dp))
                     Text(
-                        subtitle,
-                        fontSize = 9.sp,
-                        color = accentColor.copy(alpha = 0.6f)
+                        "3 actions",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = accent,
+                        fontWeight = FontWeight.Medium
                     )
                 }
+            }
+        }
+    }
+}
 
-                // Arrow with subtle glow
+// ────────── SHIMMER ACTION BUTTON ──────────
+
+@Composable
+fun ShimmerActionButton(
+    label: String,
+    subLabel: String,
+    icon: String,
+    gradient: Brush,
+    onClick: () -> Unit
+) {
+    val transition = rememberInfiniteTransition(label = "shim")
+    val shimmerX by transition.animateFloat(
+        -200f, 800f, infiniteRepeatable(tween(1800, easing = LinearEasing), RepeatMode.Restart), label = ""
+    )
+    val glowAlpha by transition.animateFloat(
+        0f, 0.2f, infiniteRepeatable(tween(1400, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = ""
+    )
+
+    var pressScale by remember { mutableFloatStateOf(1f) }
+    val scale by animateFloatAsState(pressScale, spring(0.55f, 400f), label = "")
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    LaunchedEffect(pressed) { pressScale = if (pressed) 0.93f else 1f }
+
+    val shape = RoundedCornerShape(14.dp)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .scale(scale),
+        shape = shape,
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        onClick = onClick,
+        interactionSource = interaction
+    ) {
+        Box(Modifier.fillMaxSize().background(gradient, shape)) {
+            // Shimmer sweep
+            Box(
+                Modifier.fillMaxSize().drawBehind {
+                    val x = shimmerX.dp.toPx()
+                    drawRoundRect(
+                        brush = Brush.horizontalGradient(
+                            listOf(Color.Transparent, Color.White.copy(alpha = 0.18f), Color.Transparent),
+                            startX = x, endX = x + 250f
+                        ),
+                        cornerRadius = CornerRadius(14.dp.toPx())
+                    )
+                }
+            )
+            // Glow pulse
+            Box(Modifier.fillMaxSize().background(Color.White.copy(alpha = glowAlpha), shape))
+            // Left accent strip
+            Box(
+                Modifier.align(Alignment.CenterStart).width(5.dp).fillMaxHeight().background(
+                    Brush.verticalGradient(listOf(Color.White.copy(0.6f), Color.White.copy(0.1f))),
+                    RoundedCornerShape(topStart = 14.dp, bottomStart = 14.dp)
+                )
+            )
+
+            Row(
+                Modifier.fillMaxSize().padding(horizontal = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    Modifier.size(36.dp).background(
+                        Brush.radialGradient(listOf(Color.White.copy(0.3f), Color.Transparent)),
+                        CircleShape
+                    ),
+                    contentAlignment = Alignment.Center
+                ) { Text(icon, fontSize = 18.sp) }
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text(subLabel, color = Color.White.copy(0.8f), fontSize = 11.sp)
+                }
                 Icon(
-                    Icons.AutoMirrored.Filled.ArrowForward,
-                    null,
-                    tint = accentColor.copy(alpha = 0.4f),
-                    modifier = Modifier.size(14.dp)
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = Color.White.copy(0.8f),
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
     }
 }
 
-// ── Mini Quiz Banner ─────────────────────────────────────────
+// ────────── MEGA QUIZ BANNER ──────────
+
 @Composable
-private fun MiniQuizBanner(onClick: () -> Unit) {
-    val inf = rememberInfiniteTransition()
-    val bg by inf.animateFloat(0.2f, 0.5f, infiniteRepeatable(tween(2800, easing = LinearEasing), RepeatMode.Reverse), label = "bg")
-    val sh by inf.animateFloat(-2f, 3.5f, infiniteRepeatable(tween(2600, easing = LinearEasing), RepeatMode.Restart), label = "sh")
-    var vis by remember { mutableStateOf(false) }; LaunchedEffect(Unit) { vis = true }
-    val a by animateFloatAsState(if (vis) 1f else 0f, tween(500, delayMillis = 300), label = "ea")
-    Card(modifier = Modifier.fillMaxWidth().padding(top = 4.dp).alpha(a), shape = RoundedCornerShape(16.dp), elevation = CardDefaults.cardElevation(defaultElevation = 6.dp), border = BorderStroke(1.5.dp, Color.White.copy(alpha = bg * 0.6f))) {
-        Box(modifier = Modifier.fillMaxWidth().background(GradientMegaQuiz).padding(20.dp)) {
-            Column {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
-                    Column {
-                        Surface(color = Color.White.copy(alpha = 0.2f), shape = RoundedCornerShape(percent = 50)) { Text("লাইভ", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp)) }
-                        Spacer(Modifier.height(6.dp)); Text("মেগা কুইজ চ্যালেঞ্জ", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 18.sp)
+fun MiniQuizBanner(nav: NavController) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(
+            Modifier.fillMaxWidth().background(
+                Brush.horizontalGradient(listOf(Color(0xFFFF6F00), Color(0xFFFFA000)))
+            ).padding(16.dp)
+        ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        "Mega Quiz",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text("Participate in mega quiz", color = Color.White.copy(0.8f), fontSize = 13.sp, maxLines = 3)
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        onClick = { nav(nav, MegaQuizRoutineRoute) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+                    ) {
+                        Text("Enter Quiz", color = Color(0xFFFF6F00), fontWeight = FontWeight.Bold)
                     }
-                }
-                Spacer(Modifier.height(8.dp))
-                Text("অংশগ্রহণ করে জিতে নিন স্পেশাল পয়েন্ট!", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
-                Spacer(Modifier.height(12.dp))
-                Box(modifier = Modifier.fillMaxWidth().height(42.dp).clip(RoundedCornerShape(10.dp)).background(Color.White).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
-                    Text("শুরু করুন", fontWeight = FontWeight.Bold, color = BrandPrimary)
-                    Box(modifier = Modifier.matchParentSize().offset(x = (sh * 300).dp).background(Brush.horizontalGradient(listOf(Color.Transparent, Color.Transparent, BrandPrimary.copy(alpha = 0.2f), BrandPrimary.copy(alpha = 0.05f), Color.Transparent))))
                 }
             }
         }
     }
 }
 
-// ── Icon/Color rotation ──────────────────────────────────────
-private fun subTopicStyle(index: Int): Pair<ImageVector, Color> = listOf(
-    Icons.Filled.Public to Color(0xFF0D9488), Icons.Filled.HistoryEdu to Color(0xFFB45309),
-    Icons.Filled.AccountBalance to Color(0xFF4F46E5), Icons.Filled.EditNote to Color(0xFF7C3AED),
-    Icons.Filled.Description to Color(0xFFDB2777), Icons.Filled.Gavel to Color(0xFF9333EA),
-    Icons.Filled.Flag to Color(0xFFDC2626), Icons.Filled.MilitaryTech to Color(0xFF15803D),
-    Icons.Filled.Tour to Color(0xFF0891B2), Icons.Filled.Palette to Color(0xFFC026D3),
-    Icons.Filled.Water to Color(0xFF0284C7), Icons.Filled.Groups to Color(0xFF2563EB),
-    Icons.Filled.Commute to Color(0xFF7C3AED), Icons.Filled.WbSunny to Color(0xFFD97706),
-    Icons.Filled.Agriculture to Color(0xFF65A30D), Icons.Filled.HowToVote to Color(0xFFEA580C)
-)[index % 16]
+// ────────── SECTION HEADER ──────────
+
+@Composable
+fun SectionHeader(title: String, color: Color) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.12f)),
+        border = BorderStroke(0.5.dp, color.copy(alpha = 0.3f))
+    ) {
+        Row(
+            Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("➤ ", color = color, fontSize = 16.sp)
+            Text(title, color = color, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        }
+    }
+}
+
+// ────────── MAIN SCREEN ──────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopicListScreen(
+    mainTopicId: String,
+    title: String,
+    vm: GKViewModel,
+    nav: NavController
+) {
+    val subs by vm.getSubTopics(mainTopicId).collectAsState(initial = emptyList())
+
+    val accent = if (mainTopicId.startsWith("bd_")) AccentDark else Accent
+
+    // Dialog state — selected sub-topic (null = closed)
+    var selectedSubTopic by remember { mutableStateOf<GKSubTopicEntity?>(null) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = when (mainTopicId) {
+                            "bd_1" -> "ভৌগোলিক অবস্থান"
+                            "bd_2" -> "নদ-নদী"
+                            "bd_3" -> "আবহাওয়া/জলবায়ু"
+                            "bd_4" -> "কৃষি/খনিজ/শিল্প"
+                            "bd_5" -> "অর্থনীতি"
+                            "bd_6" -> "যোগাযোগ"
+                            "bd_7" -> "উপজাতি"
+                            "bd_8" -> "প্রাচীন ইতিহাস"
+                            "bd_9" -> "ব্রিটিশ আমল"
+                            "bd_10" -> "পাকিস্তান আমল"
+                            "bd_11" -> "মুক্তিযুদ্ধ"
+                            "bd_12" -> "স্বাধীনতা পরবর্তী"
+                            "bd_13" -> "সংবিধান"
+                            "bd_14" -> "সংস্কৃতি/পর্যটন"
+                            "bd_15" -> "বিবিধ"
+                            else -> "Sub Topics"
+                        },
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { nav.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+            )
+        }
+    ) { padding ->
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Header
+            item(span = { GridItemSpan(3) }) {
+                SubTopicListHeader(subs.size, accent)
+            }
+
+            // Sub-topic cards — static grid, click opens dialog
+            itemsIndexed(subs) { idx, st ->
+                SubTopicGridCard(
+                    subTopic = st,
+                    colorIndex = idx,
+                    onClick = { selectedSubTopic = st }
+                )
+            }
+
+            // Spacer
+            item(span = { GridItemSpan(3) }) { Spacer(Modifier.height(4.dp)) }
+
+            // Mega quiz banner
+            item(span = { GridItemSpan(3) }) { MiniQuizBanner(nav) }
+        }
+    }
+
+    // ────────── CENTERED DIALOG ──────────
+
+    selectedSubTopic?.let { st ->
+        val accentIdx = subs.indexOf(st).coerceAtLeast(0)
+        val dialogAccent = AccentColors[accentIdx % AccentColors.size]
+
+        Dialog(onDismissRequest = { selectedSubTopic = null }) {
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 12.dp,
+                tonalElevation = 4.dp
+            ) {
+                Column(
+                    Modifier.fillMaxWidth().padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Close button
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        IconButton(
+                            onClick = { selectedSubTopic = null },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Close,
+                                contentDescription = "Close",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+
+                    // Accent icon
+                    Box(
+                        Modifier.size(48.dp).background(
+                            brush = Brush.radialGradient(
+                                listOf(dialogAccent.copy(alpha = 0.25f), Color.Transparent)
+                            ),
+                            shape = CircleShape
+                        ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            topicIcons.getOrElse(accentIdx % topicIcons.size) { "📖" },
+                            fontSize = 24.sp
+                        )
+                    }
+                    Spacer(Modifier.height(10.dp))
+
+                    // Title
+                    Text(
+                        st.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Choose an action",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(16.dp))
+
+                    // Gradient divider
+                    Box(
+                        Modifier.fillMaxWidth().height(1.dp).background(
+                            Brush.horizontalGradient(
+                                listOf(Color.Transparent, dialogAccent.copy(alpha = 0.4f), Color.Transparent)
+                            )
+                        )
+                    )
+                    Spacer(Modifier.height(16.dp))
+
+                    // 3 shimmer action buttons
+                    ShimmerActionButton(
+                        label = "✦ Special Note",
+                        subLabel = "Read detailed notes",
+                        icon = "✦",
+                        gradient = Brush.horizontalGradient(listOf(Color(0xFF00897B), Color(0xFF4DB6AC)))
+                    ) {
+                        selectedSubTopic = null
+                        nav(nav, SubTopicDetailRoute(st.id, st.title))
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    ShimmerActionButton(
+                        label = "✧ MCQ Practice",
+                        subLabel = "Practice unlimited MCQs",
+                        icon = "✧",
+                        gradient = Brush.horizontalGradient(listOf(Color(0xFF5C6BC0), Color(0xFF7986CB)))
+                    ) {
+                        selectedSubTopic = null
+                        nav(nav, MCQPracticeRoute(st.id))
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    ShimmerActionButton(
+                        label = "◈ MCQ Quiz",
+                        subLabel = "Timed quiz challenge",
+                        icon = "◈",
+                        gradient = Brush.horizontalGradient(listOf(Color(0xFFE65100), Color(0xFFFF8F00)))
+                    ) {
+                        selectedSubTopic = null
+                        nav(nav, MCQQuizRoute(st.id))
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+                }
+            }
+        }
+    }
+}

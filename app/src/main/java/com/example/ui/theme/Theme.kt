@@ -10,6 +10,41 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.animation.core.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.runtime.getValue
+
+fun Modifier.shiningEffect(): Modifier = composed {
+    val transition = rememberInfiniteTransition(label = "shining")
+    val translateAnim by transition.animateFloat(
+        initialValue = -1000f,
+        targetValue = 2000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 3000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shiningAnim"
+    )
+    this.drawWithContent {
+        drawContent()
+        val brush = Brush.linearGradient(
+            colors = listOf(
+                Color.Transparent,
+                Color.White.copy(alpha = 0.2f),
+                Color.White.copy(alpha = 0.5f),
+                Color.White.copy(alpha = 0.2f),
+                Color.Transparent
+            ),
+            start = Offset(translateAnim, translateAnim - 500f),
+            end = Offset(translateAnim + 500f, translateAnim)
+        )
+        drawRect(brush = brush)
+    }
+}
 
 private val DarkColorScheme = darkColorScheme(
     primary = BrandPrimary,

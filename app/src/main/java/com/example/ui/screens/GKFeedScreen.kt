@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -226,34 +227,79 @@ private fun FeedCard(item: RecentGKEntity, isExpanded: Boolean, onTap: () -> Uni
 
             if (item.specialTopicNote.isNotBlank()) {
                 Spacer(Modifier.height(6.dp))
-                Text(
-                    item.specialTopicNote.parseHtml(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary,
-                    maxLines = if (isExpanded) Int.MAX_VALUE else 3,
-                    overflow = if (isExpanded) TextOverflow.Visible else TextOverflow.Ellipsis
-                )
+                if (!isExpanded) {
+                    Text(
+                        item.specialTopicNote.parseHtml(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                } else {
+                    // Book-like point-wise boxes
+                    val points = item.specialTopicNote.split("।").map { it.trim() }.filter { it.isNotEmpty() }
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        points.forEach { point ->
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                color = Color(0xFFFAFBFF),
+                                border = BorderStroke(1.dp, Color(0xFFE1E6F5))
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.MenuBook,
+                                        contentDescription = null,
+                                        tint = accentColor,
+                                        modifier = Modifier.size(16.dp).padding(top = 2.dp)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        text = "$point।",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = TextPrimary,
+                                        lineHeight = 22.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             // ── Expanded detail ──
             if (isExpanded) {
-                // Confusion Corner
-                if (item.confusionCorner.isNotBlank()) {
-                    Spacer(Modifier.height(12.dp))
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = WarningColor.copy(alpha = 0.06f),
-                        border = BorderStroke(1.dp, WarningColor.copy(alpha = 0.2f))
-                    ) {
-                        Row(modifier = Modifier.padding(12.dp)) {
-                            Text("\u26A0\uFE0F", fontSize = 14.sp)
+                // Possible Question / Exam Focus
+                Spacer(Modifier.height(16.dp))
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = accentColor.copy(alpha = 0.05f),
+                    border = BorderStroke(1.dp, accentColor.copy(alpha = 0.15f))
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("\uD83D\uDCA1", fontSize = 16.sp)
                             Spacer(Modifier.width(8.dp))
-                            Column {
-                                Text("কনফিউশন কর্নার", style = MaterialTheme.typography.labelMedium, color = WarningColor, fontWeight = FontWeight.Bold)
-                                Spacer(Modifier.height(4.dp))
-                                Text(item.confusionCorner.parseHtml(), style = MaterialTheme.typography.bodySmall, color = TextPrimary, lineHeight = 18.sp)
-                            }
+                            Text("Possible Question & Exam Focus", style = MaterialTheme.typography.titleSmall, color = accentColor, fontWeight = FontWeight.Bold)
                         }
+                        Spacer(Modifier.height(8.dp))
+                        
+                        val rawQText = if (item.confusionCorner.isNotBlank()) {
+                            item.confusionCorner
+                        } else {
+                            "<b>Q:</b> ${item.topicTitle} সম্পর্কিত গুরুত্বপূর্ণ তথ্যগুলো কী কী?<br><b>Ans:</b> উপরের পয়েন্টগুলো থেকে পরীক্ষার জন্য প্রস্তুতি নিন।"
+                        }
+                        val qText = rawQText.parseHtml()
+                        
+                        Text(
+                            text = qText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextPrimary,
+                            lineHeight = 20.sp
+                        )
                     }
                 }
 

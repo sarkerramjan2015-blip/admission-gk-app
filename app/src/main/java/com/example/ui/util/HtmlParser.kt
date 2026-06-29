@@ -36,6 +36,19 @@ fun String.parseHtml(): AnnotatedString {
                 if (nextTag == -1) {
                     append(remaining)
                     remaining = ""
+                } else if (nextTag == 0) {
+                    val closeTag = remaining.indexOf(">")
+                    if (closeTag == -1) {
+                        append(remaining)
+                        remaining = ""
+                    } else {
+                        val tagStr = remaining.substring(0, closeTag + 1).lowercase()
+                        if (tagStr == "<br>") {
+                            append("\n")
+                        }
+                        // Skip the tag text
+                        remaining = remaining.substring(closeTag + 1)
+                    }
                 } else {
                     append(remaining.substring(0, nextTag))
                     remaining = remaining.substring(nextTag)

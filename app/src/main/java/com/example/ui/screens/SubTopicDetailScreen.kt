@@ -60,6 +60,7 @@ private fun rememberMarkwon(): Markwon {
         Markwon.builder(context)
             .usePlugin(TablePlugin.create(context))
             .usePlugin(HtmlPlugin.create())
+            .usePlugin(io.noties.markwon.image.ImagesPlugin.create())
             .build()
     }
 }

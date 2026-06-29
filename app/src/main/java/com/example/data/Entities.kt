@@ -67,7 +67,8 @@ data class MegaQuizQuestionEntity(
     val questionText: String,
     val options: String, // JSON list
     val correctAnswer: String,
-    val explanation: String
+    val explanation: String,
+    val relatedSubTopicId: String? = null
 )
 
 @Entity(tableName = "mega_quiz_results")

@@ -131,8 +131,17 @@ fun MainApp(viewModel: GKViewModel, authManager: AuthManager, fingerprintAvailab
                 AdminDashboardScreen(viewModel, navController)
             }
 
+            composable<DashboardRoute> {
+                StudentDashboardScreen(viewModel, navController)
+            }
+
             composable<MegaQuizRoutineRoute> {
                 MegaQuizRoutineScreen(viewModel, navController)
+            }
+
+            composable<MegaQuizRoutineDetailRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<MegaQuizRoutineDetailRoute>()
+                MegaQuizRoutineDetailScreen(navController, viewModel, route.examId)
             }
 
             composable<ProgressReportRoute> {

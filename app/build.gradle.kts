@@ -103,6 +103,7 @@ dependencies {
   implementation(libs.markwon.core)
   implementation(libs.markwon.ext.tables)
   implementation(libs.markwon.html)
+  implementation(libs.markwon.image)
   // implementation(libs.firebase.ai)
   implementation(libs.kotlinx.serialization.json)
   implementation(libs.kotlinx.coroutines.android)

@@ -48,7 +48,8 @@ data class FirestoreMegaQuestion(
     val questionText: String = "",
     val options: String = "[]",
     val correctAnswer: String = "",
-    val explanation: String = ""
+    val explanation: String = "",
+    val relatedSubTopicId: String = ""
 )
 
 data class FirestoreMegaResult(

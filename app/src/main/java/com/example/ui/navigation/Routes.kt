@@ -28,5 +28,6 @@ import kotlinx.serialization.Serializable
 @Serializable data class MCQPracticeRoute(val subTopicId: String)
 @Serializable data object ProfileRoute
 @Serializable data object MegaQuizRoutineRoute
+@Serializable data class MegaQuizRoutineDetailRoute(val examId: String? = null)
 @Serializable data object AdminDashboardRoute
 @Serializable data object ProgressReportRoute
